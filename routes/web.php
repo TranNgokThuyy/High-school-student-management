@@ -31,6 +31,9 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
 
     // ===== QUẢN LÝ HỌC SINH =====
     Route::resource('hoc-sinh', HocSinhController::class);
+    Route::get('/hoc-sinh-nhap-excel', [HocSinhController::class, 'showImport'])->name('hoc-sinh.import.form');
+    Route::post('/hoc-sinh-nhap-excel', [HocSinhController::class, 'import'])->name('hoc-sinh.import');
+    Route::get('/hoc-sinh-mau-excel', [HocSinhController::class, 'downloadTemplate'])->name('hoc-sinh.import.template');
 
     // ===== QUẢN LÝ LỚP HỌC =====
     Route::resource('lop-hoc', LopHocController::class);
@@ -71,13 +74,13 @@ Route::prefix('hanh-kiem')->name('hanh-kiem.')->group(function () {
     Route::resource('tai-khoan', TaiKhoanController::class);
     Route::patch('/tai-khoan/{taiKhoan}/toggle-active', [TaiKhoanController::class, 'toggleActive'])
         ->name('tai-khoan.toggle-active');
-});
 // ===== THỜI KHÓA BIỂU =====
 Route::prefix('thoi-khoa-bieu')->name('thoi-khoa-bieu.')->group(function () {
     Route::get('/',         [ThoiKhoaBieuController::class, 'index'])->name('index');
     Route::get('/them',     [ThoiKhoaBieuController::class, 'create'])->name('create');
     Route::post('/',        [ThoiKhoaBieuController::class, 'store'])->name('store');
     Route::delete('/{thoiKhoaBieu}', [ThoiKhoaBieuController::class, 'destroy'])->name('destroy');
+});
 });
 Route::get('/register',  [RegisterController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [RegisterController::class, 'register'])->middleware('guest');

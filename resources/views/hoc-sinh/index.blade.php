@@ -8,9 +8,14 @@
         <p class="text-muted mb-0">Tổng cộng: {{ $hocSinh->total() }} học sinh</p>
     </div>
     @can('them-hoc-sinh')
+    <div class="d-flex gap-2">
+    <a href="{{ route('hoc-sinh.import.form') }}" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Nhập từ Excel
+    </a>
     <a href="{{ route('hoc-sinh.create') }}" class="btn btn-primary">
         <i class="bi bi-person-plus me-2"></i>Thêm học sinh
     </a>
+    </div>
     @endcan
 </div>
 
