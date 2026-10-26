@@ -4,6 +4,12 @@ namespace App\Http\Controllers;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
 use App\Services\StudentSpreadsheetReader;
+use App\Support\NamHoc;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -70,55 +76,75 @@ class HocSinhController extends Controller implements HasMiddleware
         abort_unless(auth()->user()->can('them-hoc-sinh'), 403);
 
         $headers = ['ho_ten', 'ngay_sinh', 'gioi_tinh', 'ten_lop', 'nam_hoc', 'cccd', 'so_dien_thoai', 'email', 'dan_toc', 'dia_chi_thuong_tru', 'ho_ten_cha', 'so_dien_thoai_cha', 'ho_ten_me', 'so_dien_thoai_me'];
-        $example = ['Nguyễn Văn An', '15/08/2010', 'Nam', '10A1', '2026-2027', '012345678901', '0912345678', 'an@example.com', 'Kinh', 'Hà Nội', 'Nguyễn Văn Bình', '0987654321', 'Trần Thị Hoa', '0976543210'];
+        $lop = LopHoc::where('is_active', true)->orderByDesc('nam_hoc')->orderBy('ten_lop')->first();
+        $example = ['Nguyễn Văn An', '15/08/2010', 'Nam', $lop->ten_lop ?? '10A1', $lop->nam_hoc ?? NamHoc::hienTai(), '012345678901', '0912345678', 'an@example.com', 'Kinh', 'Hà Nội', 'Nguyễn Văn Bình', '0987654321', 'Trần Thị Hoa', '0976543210'];
 
-        return response()->streamDownload(function () use ($headers, $example) {
-            $output = fopen('php://output', 'wb');
-            fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, $headers);
-            fputcsv($output, $example);
-            fclose($output);
-        }, 'mau-danh-sach-hoc-sinh.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet()->setTitle('Danh sách học sinh');
+        // Định dạng văn bản để Excel không xóa số 0 đầu của CCCD / số điện thoại / ngày sinh
+        $sheet->getStyle('A:N')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+        $sheet->fromArray([$headers]);
+        foreach ($example as $i => $value) {
+            $sheet->getCell([$i + 1, 2])->setValueExplicit($value, DataType::TYPE_STRING);
+        }
+        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:E1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
+        foreach (range('A', 'N') as $cot) {
+            $sheet->getColumnDimension($cot)->setAutoSize(true);
+        }
+
+        // Trang tính tra cứu tên lớp / năm học hợp lệ
+        $dsLop = $spreadsheet->createSheet()->setTitle('Danh sách lớp');
+        $dsLop->fromArray([['ten_lop', 'nam_hoc', 'khoi']]);
+        $dsLop->fromArray(
+            LopHoc::where('is_active', true)->orderByDesc('nam_hoc')->orderBy('ten_lop')->get(['ten_lop', 'nam_hoc', 'khoi'])->toArray(),
+            null, 'A2'
+        );
+        $spreadsheet->setActiveSheetIndex(0);
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            (new Xlsx($spreadsheet))->save('php://output');
+        }, 'mau-danh-sach-hoc-sinh.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     public function import(Request $request, StudentSpreadsheetReader $reader)
     {
         abort_unless(auth()->user()->can('them-hoc-sinh'), 403);
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,xlsx', 'max:5120'],
+            'file' => ['required', 'file', 'extensions:csv,xlsx,xls', 'max:5120'],
         ], [
             'file.required' => 'Vui lòng chọn tệp danh sách.',
-            'file.mimes' => 'Chỉ chấp nhận tệp CSV hoặc XLSX.',
+            'file.extensions' => 'Chỉ chấp nhận tệp Excel (.xlsx, .xls) hoặc CSV.',
             'file.max' => 'Tệp không được lớn hơn 5 MB.',
         ]);
 
         try {
-            $rows = $reader->read($request->file('file'));
+            [$headers, $rows] = $reader->read($request->file('file'));
         } catch (RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
         }
 
-        if (count($rows) < 2) {
+        if (count($rows) < 1) {
             return back()->with('error', 'Tệp không có dòng dữ liệu học sinh.');
         }
 
-        $headers = array_map(fn ($header) => Str::slug(trim((string) $header), '_'), array_shift($rows));
         $requiredHeaders = ['ho_ten', 'ngay_sinh', 'gioi_tinh', 'ten_lop', 'nam_hoc'];
         if (array_diff($requiredHeaders, $headers)) {
-            return back()->with('error', 'Tệp thiếu cột bắt buộc: '.implode(', ', array_diff($requiredHeaders, $headers)).'.');
+            return back()->with('error', 'Tệp thiếu cột bắt buộc: '.implode(', ', array_diff($requiredHeaders, $headers)).'. Hãy dùng file mẫu hoặc đặt tên cột như "Họ và tên", "Ngày sinh", "Giới tính", "Lớp", "Năm học".');
         }
 
         $imported = 0;
+        $skipped = 0;
         $errors = [];
         $affectedClassIds = [];
-        foreach ($rows as $index => $values) {
-            if (count(array_filter($values, fn ($value) => trim((string) $value) !== '')) === 0) {
+        foreach ($rows as $row) {
+            $line = $row['_dong'];
+            $row = array_map(fn ($value) => trim((string) $value) === '' ? null : trim((string) $value), $row);
+            if (count(array_filter($row)) <= 1) {
                 continue;
             }
-            $values = array_pad($values, count($headers), '');
-            $row = array_combine($headers, array_slice($values, 0, count($headers)));
-            $row = array_map(fn ($value) => trim((string) $value) === '' ? null : trim((string) $value), $row);
             $row['ngay_sinh'] = $this->normalizeSpreadsheetDate($row['ngay_sinh'] ?? null);
+            $row['gioi_tinh'] = $this->normalizeGioiTinh($row['gioi_tinh'] ?? null);
 
             $validator = Validator::make($row, [
                 'ho_ten' => ['required', 'string', 'max:100'],
@@ -135,9 +161,12 @@ class HocSinhController extends Controller implements HasMiddleware
                 'so_dien_thoai_cha' => ['nullable', 'digits_between:9,12'],
                 'ho_ten_me' => ['nullable', 'string', 'max:100'],
                 'so_dien_thoai_me' => ['nullable', 'digits_between:9,12'],
+            ], [
+                'ngay_sinh.date_format' => 'Ngày sinh phải có dạng dd/mm/yyyy.',
+                'gioi_tinh.in' => 'Giới tính phải là Nam, Nữ hoặc Khác.',
+                'cccd.unique' => 'CCCD đã tồn tại trong hệ thống.',
             ]);
 
-            $line = $index + 2;
             if ($validator->fails()) {
                 $errors[] = ['line' => $line, 'name' => $row['ho_ten'] ?? '—', 'message' => implode(' ', $validator->errors()->all())];
                 continue;
@@ -149,24 +178,32 @@ class HocSinhController extends Controller implements HasMiddleware
                 continue;
             }
 
-            DB::transaction(function () use ($row, $lop) {
-                HocSinh::create([
-                    'ho_ten' => $row['ho_ten'],
-                    'ngay_sinh' => $row['ngay_sinh'],
-                    'gioi_tinh' => $row['gioi_tinh'],
-                    'lop_hoc_id' => $lop->id,
-                    'cccd' => $row['cccd'] ?? null,
-                    'so_dien_thoai' => $row['so_dien_thoai'] ?? null,
-                    'email' => $row['email'] ?? null,
-                    'dan_toc' => $row['dan_toc'] ?? 'Kinh',
-                    'dia_chi_thuong_tru' => $row['dia_chi_thuong_tru'] ?? null,
-                    'ho_ten_cha' => $row['ho_ten_cha'] ?? null,
-                    'so_dien_thoai_cha' => $row['so_dien_thoai_cha'] ?? null,
-                    'ho_ten_me' => $row['ho_ten_me'] ?? null,
-                    'so_dien_thoai_me' => $row['so_dien_thoai_me'] ?? null,
-                    'trang_thai' => 'Đang học',
-                ]);
-            });
+            // Bỏ qua học sinh đã có (cùng họ tên, ngày sinh, lớp) để nhập lại tệp không bị trùng
+            $daTonTai = HocSinh::where('ho_ten', $row['ho_ten'])
+                ->whereDate('ngay_sinh', $row['ngay_sinh'])
+                ->where('lop_hoc_id', $lop->id)
+                ->exists();
+            if ($daTonTai) {
+                $skipped++;
+                continue;
+            }
+
+            HocSinh::create([
+                'ho_ten' => $row['ho_ten'],
+                'ngay_sinh' => $row['ngay_sinh'],
+                'gioi_tinh' => $row['gioi_tinh'],
+                'lop_hoc_id' => $lop->id,
+                'cccd' => $row['cccd'] ?? null,
+                'so_dien_thoai' => $row['so_dien_thoai'] ?? null,
+                'email' => $row['email'] ?? null,
+                'dan_toc' => $row['dan_toc'] ?? 'Kinh',
+                'dia_chi_thuong_tru' => $row['dia_chi_thuong_tru'] ?? null,
+                'ho_ten_cha' => $row['ho_ten_cha'] ?? null,
+                'so_dien_thoai_cha' => $row['so_dien_thoai_cha'] ?? null,
+                'ho_ten_me' => $row['ho_ten_me'] ?? null,
+                'so_dien_thoai_me' => $row['so_dien_thoai_me'] ?? null,
+                'trang_thai' => 'Đang học',
+            ]);
             $imported++;
             $affectedClassIds[$lop->id] = true;
         }
@@ -175,7 +212,17 @@ class HocSinhController extends Controller implements HasMiddleware
             $this->capNhatSiSo($classId);
         }
 
-        return redirect()->route('hoc-sinh.import.form')->with('import_result', compact('imported', 'errors'));
+        return redirect()->route('hoc-sinh.import.form')->with('import_result', compact('imported', 'skipped', 'errors'));
+    }
+
+    private function normalizeGioiTinh(?string $value): ?string
+    {
+        return match (mb_strtolower((string) $value)) {
+            'nam', 'm', 'male' => 'Nam',
+            'nữ', 'nu', 'f', 'female' => 'Nữ',
+            'khác', 'khac' => 'Khác',
+            default => $value,
+        };
     }
 
     private function normalizeSpreadsheetDate(?string $value): ?string
@@ -186,7 +233,7 @@ class HocSinhController extends Controller implements HasMiddleware
         if (is_numeric($value)) {
             return Carbon::create(1899, 12, 30)->addDays((int) $value)->format('Y-m-d');
         }
-        foreach (['d/m/Y', 'd-m-Y', 'Y-m-d'] as $format) {
+        foreach (['d/m/Y', 'd-m-Y', 'd.m.Y', 'Y-m-d'] as $format) {
             try {
                 return Carbon::createFromFormat($format, $value)->format('Y-m-d');
             } catch (\Throwable) {
