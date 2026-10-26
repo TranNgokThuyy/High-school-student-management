@@ -41,6 +41,10 @@
             {{ request('role') === 'giao-vien-bo-mon' ? 'selected' : '' }}>
             Giáo viên bộ môn
         </option>
+        <option value="ke-toan"
+            {{ request('role') === 'ke-toan' ? 'selected' : '' }}>
+            Kế toán
+        </option>
     </select>
 </div>
             <div class="col-md-2">
@@ -105,6 +109,7 @@
                                     'quan-tri-vien' => ['label' => 'Quản trị viên', 'color' => 'danger'],
                                     'giao-vien-chu-nhiem' => ['label' => 'GV chủ nhiệm', 'color' => 'warning'],
                                     'giao-vien-bo-mon' => ['label' => 'GV bộ môn', 'color' => 'info'],
+                                    'ke-toan' => ['label' => 'Kế toán', 'color' => 'success'],
                                 ];
                                 $r = $roleLabels[$role] ?? ['label' => $role, 'color' => 'secondary'];
                             @endphp

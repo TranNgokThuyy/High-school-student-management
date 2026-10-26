@@ -241,6 +241,13 @@
             </a>
             @endcan
 
+            @can('xem-hoc-phi')
+            <span class="nav-section">Tài chính</span>
+            <a href="{{ route('hoc-phi.index') }}" class="nav-link {{ request()->routeIs('hoc-phi.*', 'khoan-thu.*') ? 'active' : '' }}">
+                <i class="bi bi-cash-coin"></i> Học phí & Khoản thu
+            </a>
+            @endcan
+
             @can('xem-bao-cao')
             <span class="nav-section">Báo cáo</span>
             <a href="{{ route('bao-cao.index') }}" class="nav-link {{ request()->routeIs('bao-cao.*') ? 'active' : '' }}">
@@ -288,7 +295,7 @@
                             <div class="text-muted small">{{ auth()->user()->email }}</div>
                             <div class="mt-1">
                                 @foreach(auth()->user()->getRoleNames() as $role)
-                                    <span class="badge bg-primary badge-role">{{ ['quan-tri-vien' => 'Quản trị viên', 'giao-vien-chu-nhiem' => 'GV chủ nhiệm', 'giao-vien-bo-mon' => 'GV bộ môn'][$role] ?? $role }}</span>
+                                    <span class="badge bg-primary badge-role">{{ \App\Support\PhanQuyen::TEN_VAI_TRO[$role] ?? $role }}</span>
                                 @endforeach
                             </div>
                         </div>

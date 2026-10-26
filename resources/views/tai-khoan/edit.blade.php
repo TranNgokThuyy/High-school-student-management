@@ -108,6 +108,12 @@
             {{ $isAdmin ? 'disabled' : '' }}>
             Giáo viên bộ môn
         </option>
+
+        <option value="ke-toan"
+            {{ $currentRole === 'ke-toan' ? 'selected' : '' }}
+            {{ $isAdmin ? 'disabled' : '' }}>
+            Kế toán
+        </option>
    
 </select>
     {{-- Gửi kèm giá trị role thực vì disabled không submit --}}

@@ -94,6 +94,10 @@
             {{ old('role') === 'giao-vien-bo-mon' ? 'selected' : '' }}>
             Giáo viên bộ môn
         </option>
+        <option value="ke-toan"
+            {{ old('role') === 'ke-toan' ? 'selected' : '' }}>
+            Kế toán
+        </option>
     </select>
     @error('role')
         <div class="invalid-feedback">{{ $message }}</div>

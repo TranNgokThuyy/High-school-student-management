@@ -12,6 +12,9 @@ use App\Http\Controllers\PhanCongGiangDayController;
 use App\Http\Controllers\DiemDanhController;
 use App\Http\Controllers\TongKetController;
 use App\Http\Controllers\KhenThuongKyLuatController;
+use App\Http\Controllers\HocPhiController;
+use App\Http\Controllers\KhoanThuController;
+use App\Http\Controllers\MienGiamController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -136,6 +139,24 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
         Route::post('/',            [KhenThuongKyLuatController::class, 'store'])->name('store')->middleware('permission:them-khen-thuong');
         Route::delete('/{khenThuong}', [KhenThuongKyLuatController::class, 'destroy'])->name('destroy')->middleware('permission:xoa-khen-thuong');
     });
+
+    // ===== HỌC PHÍ & KHOẢN THU =====
+    Route::prefix('hoc-phi')->name('hoc-phi.')->group(function () {
+        Route::get('/',                           [HocPhiController::class, 'index'])->name('index')->middleware('permission:xem-hoc-phi');
+        Route::get('/xuat-excel',                 [HocPhiController::class, 'xuatExcel'])->name('xuat-excel')->middleware('permission:xem-hoc-phi');
+        Route::get('/so-thu',                     [HocPhiController::class, 'soThu'])->name('so-thu')->middleware('permission:thu-hoc-phi');
+        Route::get('/hoc-sinh/{hocSinh}',         [HocPhiController::class, 'hocSinh'])->name('hoc-sinh')->middleware('permission:xem-hoc-phi');
+        Route::post('/hoc-sinh/{hocSinh}/thu',    [HocPhiController::class, 'thu'])->name('thu')->middleware('permission:thu-hoc-phi');
+        Route::get('/phieu-thu/{phieuThu}',       [HocPhiController::class, 'inPhieu'])->name('in-phieu')->middleware('permission:xem-hoc-phi');
+        Route::post('/phieu-thu/{phieuThu}/huy',  [HocPhiController::class, 'huyPhieu'])->name('huy-phieu')->middleware('permission:huy-phieu-thu');
+
+        Route::get('/mien-giam',                  [MienGiamController::class, 'index'])->name('mien-giam')->middleware('permission:quan-ly-khoan-thu');
+        Route::post('/mien-giam',                 [MienGiamController::class, 'store'])->name('mien-giam.store')->middleware('permission:quan-ly-khoan-thu');
+        Route::delete('/mien-giam/{mienGiam}',    [MienGiamController::class, 'destroy'])->name('mien-giam.destroy')->middleware('permission:quan-ly-khoan-thu');
+    });
+    Route::resource('khoan-thu', KhoanThuController::class)->except(['show'])
+        ->parameters(['khoan-thu' => 'khoanThu'])
+        ->middleware('permission:quan-ly-khoan-thu');
 });
 Route::get('/register',  [RegisterController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [RegisterController::class, 'register'])->middleware('guest');

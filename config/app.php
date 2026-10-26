@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Tên trường hiển thị trên phiếu thu, phiếu điểm...
+    'ten_truong' => env('TEN_TRUONG', 'Trường THPT'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

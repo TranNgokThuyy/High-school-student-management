@@ -5,6 +5,9 @@ use App\Models\DiemDanh;
 use App\Models\DiemSo;
 use App\Models\HanhKiem;
 use App\Models\HocSinh;
+use App\Models\KhoanThu;
+use App\Models\MienGiam;
+use App\Models\PhieuThu;
 use App\Models\LopHoc;
 use App\Models\MonHoc;
 use App\Models\PhanCongGiangDay;
@@ -121,7 +124,29 @@ class DemoDataSeeder extends Seeder
             ]);
         }
 
+        // Khoản thu năm nay, 1 học sinh miễn giảm 50%, 1 học sinh đã nộp
+        $hocPhi = KhoanThu::firstOrCreate(['ten' => 'Học phí học kỳ 1', 'nam_hoc' => $namHoc], [
+            'loai' => 'Học phí', 'hoc_ky' => '1', 'so_tien' => 1_200_000, 'han_nop' => today()->addMonth(),
+        ]);
+        KhoanThu::firstOrCreate(['ten' => 'Bảo hiểm y tế', 'nam_hoc' => $namHoc], [
+            'loai' => 'Bảo hiểm', 'so_tien' => 884_520, 'ap_dung_mien_giam' => false,
+        ]);
+        $hs11 = $lop11->hocSinh()->orderBy('id')->get();
+        if ($hs11->count() >= 2) {
+            MienGiam::firstOrCreate(['hoc_sinh_id' => $hs11[0]->id, 'nam_hoc' => $namHoc], ['doi_tuong' => 'Hộ cận nghèo', 'phan_tram' => 50]);
+            if (!PhieuThu::where('hoc_sinh_id', $hs11[1]->id)->exists()) {
+                PhieuThu::create([
+                    'hoc_sinh_id' => $hs11[1]->id, 'khoan_thu_id' => $hocPhi->id, 'so_tien' => 1_200_000,
+                    'ngay_thu' => today(), 'hinh_thuc' => 'Tiền mặt', 'nguoi_thu_id' => User::role('quan-tri-vien')->value('id'),
+                ]);
+            }
+        }
+        User::firstOrCreate(['email' => 'ketoan@school.com'], [
+            'name' => 'Lê Thu Hằng', 'password' => Hash::make('Ketoan@123456'), 'is_active' => true,
+        ])->assignRole('ke-toan');
+
         $this->command->info("✅ Đã tạo dữ liệu mẫu (lớp 10A1 năm {$namTruoc} có đủ điểm để thử Tổng kết & Lên lớp).");
         $this->command->info('GV bộ môn: nam.gvbm@school.com / Gvbm@123456');
+        $this->command->info('Kế toán: ketoan@school.com / Ketoan@123456');
     }
 }

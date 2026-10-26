@@ -15,6 +15,11 @@
         </nav>
     </div>
     <div class="d-flex gap-2">
+        @can('xem-hoc-phi')
+        <a href="{{ route('hoc-phi.hoc-sinh', $hocSinh) }}" class="btn btn-outline-success">
+            <i class="bi bi-cash-coin me-2"></i>Học phí
+        </a>
+        @endcan
         @can('sua-hoc-sinh')
         <a href="{{ route('hoc-sinh.edit', $hocSinh) }}" class="btn btn-warning">
             <i class="bi bi-pencil me-2"></i>Chỉnh sửa

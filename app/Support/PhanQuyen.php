@@ -21,6 +21,8 @@ class PhanQuyen
         'xem-diem-danh', 'diem-danh',
         'xem-tong-ket', 'xet-len-lop',
         'xem-khen-thuong', 'them-khen-thuong', 'xoa-khen-thuong',
+        'xem-hoc-phi', 'thu-hoc-phi', 'huy-phieu-thu', 'quan-ly-khoan-thu',
+        'dang-thong-bao',
     ];
 
     public const VAI_TRO = [
@@ -37,6 +39,7 @@ class PhanQuyen
             'xem-diem-danh', 'diem-danh',
             'xem-tong-ket',
             'xem-khen-thuong', 'them-khen-thuong',
+            'xem-hoc-phi',
         ],
         'giao-vien-bo-mon' => [
             'xem-hoc-sinh',
@@ -46,6 +49,19 @@ class PhanQuyen
             'xem-phan-cong',
             'xem-thoi-khoa-bieu',
         ],
+        'ke-toan' => [
+            'xem-hoc-sinh',
+            'xem-lop-hoc',
+            'xem-hoc-phi', 'thu-hoc-phi', 'quan-ly-khoan-thu',
+            'xem-bao-cao',
+        ],
+    ];
+
+    public const TEN_VAI_TRO = [
+        'quan-tri-vien'       => 'Quản trị viên',
+        'giao-vien-chu-nhiem' => 'GV chủ nhiệm',
+        'giao-vien-bo-mon'    => 'GV bộ môn',
+        'ke-toan'             => 'Kế toán',
     ];
 
     public static function dongBo(): void
