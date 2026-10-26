@@ -195,18 +195,35 @@
                 <i class="bi bi-building"></i> Quản lý lớp học
             </a>
             @endcan
-            @can('xem-lop-hoc')
+            @can('xem-diem-danh')
+            <a href="{{ route('diem-danh.index') }}" class="nav-link {{ request()->routeIs('diem-danh.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar-check"></i> Điểm danh
+            </a>
+            @endcan
+            @can('xem-khen-thuong')
+            <a href="{{ route('khen-thuong.index') }}" class="nav-link {{ request()->routeIs('khen-thuong.*') ? 'active' : '' }}">
+                <i class="bi bi-trophy"></i> Khen thưởng - Kỷ luật
+            </a>
+            @endcan
+            @can('xem-thoi-khoa-bieu')
 <a href="{{ route('thoi-khoa-bieu.index') }}"
    class="nav-link {{ request()->routeIs('thoi-khoa-bieu.*') ? 'active' : '' }}">
     <i class="bi bi-calendar-week"></i> Thời khóa biểu
 </a>
 @endcan
-            @can('xem-diem')
             <span class="nav-section">Học tập</span>
+            @can('xem-mon-hoc')
             <a href="{{ route('mon-hoc.index') }}" 
    class="nav-link {{ request()->routeIs('mon-hoc.*') ? 'active' : '' }}">
     <i class="bi bi-book-half"></i> Quản lý môn học
 </a>
+            @endcan
+            @can('xem-phan-cong')
+            <a href="{{ route('phan-cong.index') }}" class="nav-link {{ request()->routeIs('phan-cong.*') ? 'active' : '' }}">
+                <i class="bi bi-diagram-3"></i> Phân công giảng dạy
+            </a>
+            @endcan
+            @can('xem-diem')
             <a href="{{ route('diem-so.bang-diem') }}" class="nav-link {{ request()->routeIs('diem-so.*') ? 'active' : '' }}">
                 <i class="bi bi-journal-text"></i> Quản lý điểm số
             </a>
@@ -218,6 +235,12 @@
             </a>
             @endcan
             
+            @can('xem-tong-ket')
+            <a href="{{ route('tong-ket.index') }}" class="nav-link {{ request()->routeIs('tong-ket.*') ? 'active' : '' }}">
+                <i class="bi bi-award"></i> Tổng kết & Lên lớp
+            </a>
+            @endcan
+
             @can('xem-bao-cao')
             <span class="nav-section">Báo cáo</span>
             <a href="{{ route('bao-cao.index') }}" class="nav-link {{ request()->routeIs('bao-cao.*') ? 'active' : '' }}">
@@ -265,7 +288,7 @@
                             <div class="text-muted small">{{ auth()->user()->email }}</div>
                             <div class="mt-1">
                                 @foreach(auth()->user()->getRoleNames() as $role)
-                                    <span class="badge bg-primary badge-role">{{ ucfirst($role) }}</span>
+                                    <span class="badge bg-primary badge-role">{{ ['quan-tri-vien' => 'Quản trị viên', 'giao-vien-chu-nhiem' => 'GV chủ nhiệm', 'giao-vien-bo-mon' => 'GV bộ môn'][$role] ?? $role }}</span>
                                 @endforeach
                             </div>
                         </div>

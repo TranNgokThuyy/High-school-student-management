@@ -252,7 +252,7 @@ class HocSinhController extends Controller implements HasMiddleware
 
     public function show(HocSinh $hocSinh)
     {
-        $hocSinh->load(['lopHoc', 'diemSo.monHoc', 'hanhKiem']);
+        $hocSinh->load(['lopHoc', 'diemSo.monHoc', 'hanhKiem', 'khenThuongKyLuat']);
         return view('hoc-sinh.show', compact('hocSinh'));
     }
 

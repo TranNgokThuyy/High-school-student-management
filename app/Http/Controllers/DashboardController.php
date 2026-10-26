@@ -11,12 +11,12 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $namHocHienTai = date('Y') . '-' . (date('Y') + 1);
+        $namHocHienTai = \App\Support\NamHoc::hienTai();
         
         $stats = [
             'tong_hoc_sinh' => HocSinh::where('trang_thai', 'Đang học')->count(),
             'tong_lop_hoc' => LopHoc::where('is_active', true)->count(),
-            'tong_giao_vien' => User::role('giao-vien-chu-nhiem')->where('is_active', true)->count(),
+            'tong_giao_vien' => User::role(['giao-vien-chu-nhiem', 'giao-vien-bo-mon'])->where('is_active', true)->count(),
             'tong_tai_khoan' => User::count(),
         ];
 

@@ -16,16 +16,21 @@ class RegistrationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_new_users_can_register(): void
+    public function test_new_users_can_register_and_wait_for_activation(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password123',
+            'password_confirmation' => 'Password123',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // Tài khoản tự đăng ký chưa được kích hoạt và không tự đăng nhập
+        $this->assertGuest();
+        $response->assertRedirect(route('login', absolute: false));
+
+        $user = \App\Models\User::where('email', 'test@example.com')->first();
+        $this->assertFalse($user->is_active);
+        $this->assertTrue($user->hasRole('giao-vien-bo-mon'));
     }
 }

@@ -73,9 +73,15 @@
             <small class="text-muted">{{ $selectedLop->hocSinh->count() }} học sinh</small>
         </div>
         @can('them-diem')
-        <a href="{{ route('diem-so.nhap-diem', request()->all()) }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-pencil-square me-2"></i>Nhập điểm
-        </a>
+            @if($duocNhapDiem)
+            <a href="{{ route('diem-so.nhap-diem', request()->all()) }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil-square me-2"></i>Nhập điểm
+            </a>
+            @else
+            <span class="badge bg-light text-muted border" title="Liên hệ quản trị viên để được phân công">
+                <i class="bi bi-lock me-1"></i>Chưa được phân công môn này
+            </span>
+            @endif
         @endcan
     </div>
     <div class="table-responsive">

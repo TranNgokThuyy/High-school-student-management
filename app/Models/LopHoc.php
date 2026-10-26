@@ -40,4 +40,14 @@ class LopHoc extends Model
     {
         return $this->hasMany(PhanCongGiangDay::class, 'lop_hoc_id');
     }
+
+    public function diemDanh(): HasMany
+    {
+        return $this->hasMany(DiemDanh::class, 'lop_hoc_id');
+    }
+
+    public function capNhatSiSo(): void
+    {
+        $this->update(['si_so' => $this->hocSinh()->count()]);
+    }
 }

@@ -71,6 +71,13 @@
                             onclick="setAllHanhKiem()">
                         Áp dụng
                     </button>
+                    @if($tongHopDiemDanh['so_buoi'] > 0)
+                    <button type="button" class="btn btn-outline-primary btn-sm"
+                            onclick="layTuDiemDanh()"
+                            title="Điền số buổi vắng/đi trễ từ dữ liệu điểm danh hằng ngày">
+                        <i class="bi bi-calendar-check me-1"></i>Lấy từ điểm danh ({{ $tongHopDiemDanh['so_buoi'] }} buổi)
+                    </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -219,6 +226,22 @@
 
 @push('scripts')
 <script>
+const DIEM_DANH = @json($tongHopDiemDanh);
+function layTuDiemDanh() {
+    @foreach($lop->hocSinh as $hs)
+    (function (id) {
+        const th = DIEM_DANH.hoc_sinh[id] || {vang_co_phep: 0, vang_khong_phep: 0, di_tre: 0};
+        const set = (field, val) => {
+            const el = document.querySelector(`[name="hanh_kiem[${id}][${field}]"]`);
+            if (el) el.value = val;
+        };
+        set('so_buoi_hoc', DIEM_DANH.so_buoi);
+        set('vang_co_phep', th.vang_co_phep);
+        set('vang_khong_phep', th.vang_khong_phep);
+        set('di_tre', th.di_tre);
+    })({{ $hs->id }});
+    @endforeach
+}
 function setAllHanhKiem() {
     const val = document.getElementById('setAllHK').value;
     if (!val) return;

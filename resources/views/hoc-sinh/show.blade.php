@@ -392,6 +392,37 @@
         </div>
         @endif
 
+        {{-- Khen thưởng - Kỷ luật --}}
+        @can('xem-khen-thuong')
+        <div class="card table-card mt-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-semibold mb-0">
+                    <i class="bi bi-trophy text-warning me-2"></i>Khen thưởng - Kỷ luật
+                </h6>
+                @can('them-khen-thuong')
+                <a href="{{ route('khen-thuong.create', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Thêm
+                </a>
+                @endcan
+            </div>
+            @if($hocSinh->khenThuongKyLuat->isEmpty())
+            <div class="card-body text-center py-4 text-muted">
+                <i class="bi bi-inbox d-block fs-2 mb-2"></i>Chưa có khen thưởng / kỷ luật
+            </div>
+            @else
+            <ul class="list-group list-group-flush">
+                @foreach($hocSinh->khenThuongKyLuat->sortByDesc('ngay_quyet_dinh') as $kt)
+                <li class="list-group-item">
+                    <span class="badge bg-{{ $kt->loai === 'Khen thưởng' ? 'success' : 'danger' }} me-2">{{ $kt->hinh_thuc }}</span>
+                    {{ $kt->noi_dung }}
+                    <div class="small text-muted">{{ $kt->ngay_quyet_dinh->format('d/m/Y') }}{{ $kt->so_quyet_dinh ? ' — QĐ số ' . $kt->so_quyet_dinh : '' }}</div>
+                </li>
+                @endforeach
+            </ul>
+            @endif
+        </div>
+        @endcan
+
     </div>{{-- end col-lg-8 --}}
 
 </div>{{-- end row --}}

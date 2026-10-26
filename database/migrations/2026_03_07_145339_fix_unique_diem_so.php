@@ -1,12 +1,23 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        // SQLite/PostgreSQL: không có information_schema kiểu MySQL → dùng Schema builder
+        if (DB::getDriverName() !== 'mysql') {
+            Schema::table('diem_so', function (Blueprint $table) {
+                $table->dropUnique(['hoc_sinh_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc']);
+                $table->unique(['hoc_sinh_id', 'mon_hoc_id', 'lop_hoc_id', 'hoc_ky', 'nam_hoc'], 'diem_so_5col_unique');
+            });
+            return;
+        }
+
         // Bước 1: Lấy tất cả foreign key của bảng diem_so
         $fks = DB::select("
             SELECT
@@ -89,6 +100,14 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            Schema::table('diem_so', function (Blueprint $table) {
+                $table->dropUnique('diem_so_5col_unique');
+                $table->unique(['hoc_sinh_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc']);
+            });
+            return;
+        }
+
         try {
             DB::statement('ALTER TABLE diem_so DROP INDEX diem_so_5col_unique');
         } catch (\Exception $e) {}

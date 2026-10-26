@@ -41,11 +41,12 @@ class RegisterController extends Controller
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
             'phone'     => $request->phone,
-            'is_active' => true,
+            // Tài khoản tự đăng ký phải chờ quản trị viên kích hoạt
+            'is_active' => false,
         ]);
 
-        // Gán role mặc định là giáo viên
-        $user->assignRole('giao-vien-chu-nhiem');
+        // Gán role mặc định là giáo viên bộ môn (quyền thấp nhất); admin sẽ điều chỉnh khi duyệt
+        $user->assignRole('giao-vien-bo-mon');
 
         return redirect()->route('login')
             ->with('success', 'Đăng ký thành công! Tài khoản của bạn đang chờ quản trị viên kích hoạt.');

@@ -35,7 +35,11 @@
         </option>
         <option value="giao-vien-chu-nhiem"
             {{ request('role') === 'giao-vien-chu-nhiem' ? 'selected' : '' }}>
-            Giáo viên
+            Giáo viên chủ nhiệm
+        </option>
+        <option value="giao-vien-bo-mon"
+            {{ request('role') === 'giao-vien-bo-mon' ? 'selected' : '' }}>
+            Giáo viên bộ môn
         </option>
     </select>
 </div>
@@ -99,7 +103,8 @@
                             @php
                                 $roleLabels = [
                                     'quan-tri-vien' => ['label' => 'Quản trị viên', 'color' => 'danger'],
-                                    'giao-vien-chu-nhiem' => ['label' => 'Giáo viên', 'color' => 'warning'],
+                                    'giao-vien-chu-nhiem' => ['label' => 'GV chủ nhiệm', 'color' => 'warning'],
+                                    'giao-vien-bo-mon' => ['label' => 'GV bộ môn', 'color' => 'info'],
                                 ];
                                 $r = $roleLabels[$role] ?? ['label' => $role, 'color' => 'secondary'];
                             @endphp
