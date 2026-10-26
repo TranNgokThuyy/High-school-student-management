@@ -174,6 +174,32 @@ class TongKetService
         return ['mon_hoc' => $monHoc, 'ket_qua' => $ketQua];
     }
 
+    /**
+     * Kết quả cả năm của một học sinh (HK1, HK2, cả năm) — dùng cho phiếu điểm và tra cứu.
+     * Lớp của năm học được xác định từ bảng điểm, nếu chưa có điểm thì lấy lớp hiện tại.
+     */
+    public function ketQuaHocSinh(HocSinh $hocSinh, ?string $namHoc = null): ?array
+    {
+        $namHoc ??= $hocSinh->lopHoc?->nam_hoc ?? NamHoc::hienTai();
+
+        $lopId = DiemSo::where('hoc_sinh_id', $hocSinh->id)->where('nam_hoc', $namHoc)->value('lop_hoc_id')
+            ?? ($hocSinh->lopHoc?->nam_hoc === $namHoc ? $hocSinh->lop_hoc_id : null);
+        $lop = $lopId ? LopHoc::with('giaoVienChuNhiem')->find($lopId) : null;
+        if (!$lop) {
+            return null;
+        }
+
+        $theoKy = [];
+        $monHoc = collect();
+        foreach (['1', '2', 'Ca năm'] as $hocKy) {
+            $tongKet = $this->tongKetLop($lop, $hocKy);
+            $monHoc = $monHoc->merge($tongKet['mon_hoc'])->unique('id');
+            $theoKy[$hocKy] = $tongKet['ket_qua']->first(fn ($r) => $r['hoc_sinh']->id === $hocSinh->id);
+        }
+
+        return ['lop' => $lop, 'nam_hoc' => $namHoc, 'mon_hoc' => $monHoc->sortBy('ten_mon')->values(), 'theo_ky' => $theoKy];
+    }
+
     // ĐTB môn học kỳ lấy từ bảng điểm; ĐTB môn cả năm = (ĐTB HK1 + 2 × ĐTB HK2) / 3
     private function diemTrungBinhMon(Collection $diem, string $hocKy): ?float
     {

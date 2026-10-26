@@ -9,6 +9,26 @@
     </div>
 </div>
 
+{{-- Thông báo mới --}}
+@if($thongBao->isNotEmpty())
+<div class="card table-card mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-megaphone text-primary me-2"></i>Thông báo</h6>
+        <a href="{{ route('thong-bao.index') }}" class="small">Xem tất cả</a>
+    </div>
+    <ul class="list-group list-group-flush">
+        @foreach($thongBao as $tb)
+        <li class="list-group-item">
+            @if($tb->ghim)<i class="bi bi-pin-angle-fill text-danger me-1"></i>@endif
+            <span class="fw-semibold">{{ $tb->tieu_de }}</span>
+            @if($tb->muc_do !== 'Thông thường')<span class="badge bg-{{ \App\Models\ThongBao::MUC_DO[$tb->muc_do] }} ms-1">{{ $tb->muc_do }}</span>@endif
+            <div class="small text-muted">{{ \Illuminate\Support\Str::limit($tb->noi_dung, 160) }} — {{ $tb->created_at->format('d/m/Y') }}</div>
+        </li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
 {{-- Thống kê tổng quan --}}
 <div class="row g-4 mb-4">
     <div class="col-xl-3 col-sm-6">

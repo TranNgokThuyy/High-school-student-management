@@ -22,12 +22,17 @@ Tài khoản mặc định:
 | Quản trị viên | admin@school.com | Admin@123456 |
 | Giáo viên chủ nhiệm | hoa.gvcn@school.com | Gvcn@123456 |
 | Giáo viên bộ môn (dữ liệu mẫu) | nam.gvbm@school.com | Gvbm@123456 |
+| Kế toán (dữ liệu mẫu) | ketoan@school.com | Ketoan@123456 |
+
+Tên trường in trên phiếu thu / phiếu điểm: biến `TEN_TRUONG` trong `.env`.
 
 Chạy test: `php artisan test`
 
 ## Chức năng
 
-- **Học sinh**: hồ sơ, ảnh thẻ, nhập danh sách từ Excel/CSV, xem điểm, hạnh kiểm, khen thưởng - kỷ luật.
+- **Học sinh**: hồ sơ, ảnh thẻ, xem điểm, hạnh kiểm, khen thưởng - kỷ luật, in phiếu điểm cá nhân (PDF).
+- **Nhập học sinh từ Excel** (.xlsx, .xls, .csv): nhận tiêu đề tiếng Việt ("Họ và tên", "Ngày sinh", "Lớp"...),
+  ô ngày của Excel, giữ số 0 đầu SĐT/CCCD, bỏ qua học sinh đã có, báo lỗi theo từng dòng; file mẫu .xlsx.
 - **Lớp học, Môn học, Thời khóa biểu** (chống trùng lịch lớp / giáo viên).
 - **Phân công giảng dạy**: gán giáo viên – môn – lớp theo học kỳ, xem tải giảng dạy (tiết/tuần).
   Giáo viên chỉ được nhập điểm môn/lớp mình được phân công.
@@ -39,17 +44,25 @@ Chạy test: `php artisan test`
   rèn luyện, danh hiệu Học sinh Xuất sắc / Giỏi, xét lên lớp (nghỉ quá 45 buổi → ở lại),
   chuyển học sinh sang lớp năm học mới, công nhận tốt nghiệp khối 12.
 - **Khen thưởng - Kỷ luật** theo năm học.
+- **Học phí & khoản thu**: danh mục khoản thu (học phí, BHYT, quỹ...) theo năm học/khối, miễn giảm theo đối tượng
+  chính sách, công nợ theo lớp (xuất Excel), lập phiếu thu và in (số tiền bằng chữ), hủy phiếu có lý do, sổ thu.
+- **Thông báo nội bộ**: đăng theo vai trò nhận, ghim, hạn hiển thị; hiện trên Dashboard.
+- **Tra cứu cho phụ huynh** (`/tra-cuu`, không cần đăng nhập): mã học sinh + ngày sinh → điểm, kết quả học tập/rèn luyện,
+  vắng 30 ngày gần đây, học phí còn nợ. Không hiển thị CCCD/địa chỉ/SĐT; giới hạn 10 lượt/phút.
 - **Báo cáo**: bảng điểm lớp, xuất PDF / Excel.
 - **Tài khoản**: chỉ quản trị viên quản lý; tài khoản tự đăng ký phải chờ kích hoạt.
 
 ## Phân quyền
 
-| Chức năng | Quản trị viên | GV chủ nhiệm | GV bộ môn |
-|---|---|---|---|
-| Tài khoản, lớp, môn, TKB, phân công (thêm/sửa/xóa) | ✔ | | |
-| Nhập điểm | ✔ | theo phân công | theo phân công |
-| Điểm danh, hạnh kiểm, khen thưởng | ✔ | lớp chủ nhiệm | |
-| Tổng kết | ✔ | lớp chủ nhiệm | |
-| Xét lên lớp | ✔ | | |
+| Chức năng | Quản trị viên | GV chủ nhiệm | GV bộ môn | Kế toán |
+|---|---|---|---|---|
+| Tài khoản, lớp, môn, TKB, phân công, thông báo (thêm/sửa/xóa) | ✔ | | | |
+| Nhập điểm | ✔ | theo phân công | theo phân công | |
+| Điểm danh, hạnh kiểm, khen thưởng | ✔ | lớp chủ nhiệm | | |
+| Tổng kết | ✔ | lớp chủ nhiệm | | |
+| Xét lên lớp | ✔ | | | |
+| Xem công nợ học phí | ✔ | lớp chủ nhiệm | | ✔ |
+| Thu tiền, khoản thu, miễn giảm, sổ thu | ✔ | | | ✔ |
+| Hủy phiếu thu | ✔ | | | |
 
 Danh sách quyền và vai trò nằm ở `app/Support/PhanQuyen.php`; migration `dong_bo_phan_quyen` tự bổ sung quyền mới cho CSDL đang chạy.

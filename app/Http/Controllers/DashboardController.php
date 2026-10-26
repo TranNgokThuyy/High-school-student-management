@@ -5,6 +5,7 @@ use App\Models\DiemSo;
 use App\Models\HanhKiem;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
+use App\Models\ThongBao;
 use App\Models\User;
 
 class DashboardController extends Controller
@@ -34,6 +35,8 @@ class DashboardController extends Controller
             ->groupBy('xep_loai_hanh_kiem')
             ->get();
 
-        return view('dashboard', compact('stats', 'phanBoTheoLop', 'thongKeHanhKiem', 'namHocHienTai'));
+        $thongBao = ThongBao::choNguoiDung(auth()->user())->take(5);
+
+        return view('dashboard', compact('stats', 'phanBoTheoLop', 'thongKeHanhKiem', 'namHocHienTai', 'thongBao'));
     }
 }

@@ -182,6 +182,9 @@
             <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
+            <a href="{{ route('thong-bao.index') }}" class="nav-link {{ request()->routeIs('thong-bao.*') ? 'active' : '' }}">
+                <i class="bi bi-megaphone"></i> Thông báo
+            </a>
             
             @can('xem-hoc-sinh')
             <span class="nav-section">Học sinh</span>

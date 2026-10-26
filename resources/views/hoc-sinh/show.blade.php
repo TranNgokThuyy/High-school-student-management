@@ -15,6 +15,11 @@
         </nav>
     </div>
     <div class="d-flex gap-2">
+        @can('xem-diem')
+        <a href="{{ route('hoc-sinh.phieu-diem', $hocSinh) }}" target="_blank" class="btn btn-outline-primary">
+            <i class="bi bi-file-earmark-pdf me-2"></i>Phiếu điểm
+        </a>
+        @endcan
         @can('xem-hoc-phi')
         <a href="{{ route('hoc-phi.hoc-sinh', $hocSinh) }}" class="btn btn-outline-success">
             <i class="bi bi-cash-coin me-2"></i>Học phí

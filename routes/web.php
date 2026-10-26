@@ -15,6 +15,9 @@ use App\Http\Controllers\KhenThuongKyLuatController;
 use App\Http\Controllers\HocPhiController;
 use App\Http\Controllers\KhoanThuController;
 use App\Http\Controllers\MienGiamController;
+use App\Http\Controllers\ThongBaoController;
+use App\Http\Controllers\PhieuDiemController;
+use App\Http\Controllers\TraCuuController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -140,6 +143,15 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
         Route::delete('/{khenThuong}', [KhenThuongKyLuatController::class, 'destroy'])->name('destroy')->middleware('permission:xoa-khen-thuong');
     });
 
+    // ===== PHIẾU ĐIỂM CÁ NHÂN =====
+    Route::get('/hoc-sinh/{hocSinh}/phieu-diem', [PhieuDiemController::class, 'show'])->name('hoc-sinh.phieu-diem')
+        ->middleware('permission:xem-diem');
+
+    // ===== THÔNG BÁO =====
+    Route::get('/thong-bao', [ThongBaoController::class, 'index'])->name('thong-bao.index');
+    Route::post('/thong-bao', [ThongBaoController::class, 'store'])->name('thong-bao.store')->middleware('permission:dang-thong-bao');
+    Route::delete('/thong-bao/{thongBao}', [ThongBaoController::class, 'destroy'])->name('thong-bao.destroy')->middleware('permission:dang-thong-bao');
+
     // ===== HỌC PHÍ & KHOẢN THU =====
     Route::prefix('hoc-phi')->name('hoc-phi.')->group(function () {
         Route::get('/',                           [HocPhiController::class, 'index'])->name('index')->middleware('permission:xem-hoc-phi');
@@ -158,6 +170,10 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
         ->parameters(['khoan-thu' => 'khoanThu'])
         ->middleware('permission:quan-ly-khoan-thu');
 });
+// ===== TRA CỨU CHO PHỤ HUYNH (không cần đăng nhập, giới hạn 10 lượt/phút) =====
+Route::get('/tra-cuu', [TraCuuController::class, 'form'])->name('tra-cuu');
+Route::post('/tra-cuu', [TraCuuController::class, 'traCuu'])->name('tra-cuu.ket-qua')->middleware('throttle:10,1');
+
 Route::get('/register',  [RegisterController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [RegisterController::class, 'register'])->middleware('guest');
 require __DIR__.'/auth.php';
