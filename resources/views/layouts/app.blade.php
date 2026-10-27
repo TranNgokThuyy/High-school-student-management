@@ -153,6 +153,12 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
+        @media print {
+            .sidebar, .topbar, .no-print, .alert-flash { display: none !important; }
+            .main-content { margin-left: 0; }
+            body { background: #fff; }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -178,6 +184,21 @@
         </div>
         
         <div class="sidebar-nav mt-2">
+            @if(auth()->user()->laPhuHuynh())
+            <span class="nav-section">Phụ huynh</span>
+            <a href="{{ route('phu-huynh.index') }}" class="nav-link {{ request()->routeIs('phu-huynh.index') ? 'active' : '' }}">
+                <i class="bi bi-people"></i> Con của tôi
+            </a>
+            @foreach(auth()->user()->con()->orderBy('ho_ten')->get() as $conPH)
+            <a href="{{ route('phu-huynh.show', $conPH) }}" class="nav-link {{ request()->route('hocSinh')?->id === $conPH->id ? 'active' : '' }}">
+                <i class="bi bi-person"></i> {{ $conPH->ho_ten }}
+            </a>
+            @endforeach
+            <span class="nav-section">Tài khoản</span>
+            <a href="{{ route('doi-mat-khau') }}" class="nav-link {{ request()->routeIs('doi-mat-khau') ? 'active' : '' }}">
+                <i class="bi bi-key"></i> Đổi mật khẩu
+            </a>
+            @else
             <span class="nav-section">Tổng quan</span>
             <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2"></i> Dashboard
@@ -297,6 +318,7 @@
                 <i class="bi bi-database-check"></i> Sao lưu dữ liệu
             </a>
             @endcan
+            @endif
         </div>
     </nav>
     
@@ -337,6 +359,7 @@
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ route('doi-mat-khau') }}"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

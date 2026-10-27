@@ -162,8 +162,16 @@ class DemoDataSeeder extends Seeder
             'name' => 'Lê Thu Hằng', 'password' => Hash::make('Ketoan@123456'), 'is_active' => true,
         ])->assignRole('ke-toan');
 
+        // Phụ huynh có 2 con ở lớp 11 năm nay
+        $phuHuynh = User::firstOrCreate(['email' => 'phuhuynh@school.com'], [
+            'name' => 'Phạm Thị Lan', 'password' => Hash::make('Phuhuynh@123'), 'is_active' => true,
+        ]);
+        $phuHuynh->assignRole('phu-huynh');
+        $phuHuynh->con()->syncWithoutDetaching($hs11->take(2)->mapWithKeys(fn ($hs) => [$hs->id => ['quan_he' => 'Mẹ']])->all());
+
         $this->command->info("✅ Đã tạo dữ liệu mẫu (lớp 10A1 năm {$namTruoc} có đủ điểm để thử Tổng kết & Lên lớp).");
         $this->command->info('GV bộ môn: nam.gvbm@school.com / Gvbm@123456');
         $this->command->info('Kế toán: ketoan@school.com / Ketoan@123456');
+        $this->command->info('Phụ huynh: phuhuynh@school.com / Phuhuynh@123');
     }
 }

@@ -7,6 +7,7 @@ use App\Services\Sms\SmsGateway;
 use App\Services\Sms\WebhookSmsGateway;
 use App\Services\Sms\ZaloZnsGateway;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Chính sách mật khẩu chung cho đổi / đặt lại mật khẩu
+        Password::defaults(fn () => Password::min(8)->mixedCase()->numbers());
     }
 }

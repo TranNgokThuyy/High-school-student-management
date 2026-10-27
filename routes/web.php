@@ -29,26 +29,42 @@ use App\Http\Controllers\BienDongController;
 use App\Http\Controllers\ThongKeController;
 use App\Http\Controllers\KyThiController;
 use App\Http\Controllers\GiaoVienController;
+use App\Http\Controllers\PhuHuynhController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
 // Trang chủ redirect
 Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('login');
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route(auth()->user()->laPhuHuynh() ? 'phu-huynh.index' : 'dashboard');
 });
 
-// Routes yêu cầu đăng nhập và tài khoản active
+// Dùng chung cho cán bộ và phụ huynh
 Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
-
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Profile người dùng
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::view('/doi-mat-khau', 'doi-mat-khau')->name('doi-mat-khau');
+});
+
+// ===== CỔNG PHỤ HUYNH =====
+Route::get('/phu-huynh/dang-ky', [PhuHuynhController::class, 'dangKyForm'])->name('phu-huynh.dang-ky')->middleware('guest');
+Route::post('/phu-huynh/dang-ky', [PhuHuynhController::class, 'dangKy'])->middleware(['guest', 'throttle:5,1']);
+Route::prefix('phu-huynh')->name('phu-huynh.')->middleware(['auth', 'check.active', 'role:phu-huynh'])->group(function () {
+    Route::get('/',                      [PhuHuynhController::class, 'index'])->name('index');
+    Route::post('/con',                  [PhuHuynhController::class, 'themCon'])->name('them-con')->middleware('throttle:5,1');
+    Route::get('/con/{hocSinh}',         [PhuHuynhController::class, 'show'])->name('show');
+    Route::delete('/con/{hocSinh}',      [PhuHuynhController::class, 'boLienKet'])->name('bo-lien-ket');
+});
+
+// Routes của cán bộ nhà trường (yêu cầu đăng nhập, tài khoản active, không phải phụ huynh)
+Route::middleware(['auth', 'verified', 'check.active', 'can-bo'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ===== QUẢN LÝ HỌC SINH (phân quyền trong controller) =====
     Route::resource('hoc-sinh', HocSinhController::class);
@@ -216,6 +232,8 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     Route::get('/lop-hoc/{lopHoc}/phieu-tra-cuu', [MaTraCuuController::class, 'inPhieuLop'])->name('ma-tra-cuu.phieu-lop')
         ->middleware('permission:xem-hoc-sinh');
     Route::post('/hoc-sinh/{hocSinh}/cap-lai-ma-tra-cuu', [MaTraCuuController::class, 'capLai'])->name('ma-tra-cuu.cap-lai')
+        ->middleware('permission:sua-hoc-sinh');
+    Route::delete('/hoc-sinh/{hocSinh}/tai-khoan-phu-huynh/{taiKhoan}', [MaTraCuuController::class, 'goTaiKhoan'])->name('ma-tra-cuu.go-tai-khoan')
         ->middleware('permission:sua-hoc-sinh');
 
     // ===== TIN NHẮN PHỤ HUYNH =====

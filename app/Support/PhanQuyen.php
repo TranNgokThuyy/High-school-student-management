@@ -62,6 +62,8 @@ class PhanQuyen
             'xem-bao-cao',
             'gui-tin-phu-huynh',
         ],
+        // Phụ huynh không có quyền nào ở trang cán bộ, chỉ dùng cổng /phu-huynh
+        'phu-huynh' => [],
     ];
 
     public const TEN_VAI_TRO = [
@@ -69,6 +71,7 @@ class PhanQuyen
         'giao-vien-chu-nhiem' => 'GV chủ nhiệm',
         'giao-vien-bo-mon'    => 'GV bộ môn',
         'ke-toan'             => 'Kế toán',
+        'phu-huynh'           => 'Phụ huynh',
     ];
 
     public static function dongBo(): void

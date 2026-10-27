@@ -39,6 +39,17 @@ class User extends Authenticatable
         return $this->hasMany(PhanCongGiangDay::class, 'giao_vien_id');
     }
 
+    // Tài khoản phụ huynh: các con đã liên kết bằng mã tra cứu
+    public function con()
+    {
+        return $this->belongsToMany(HocSinh::class, 'phu_huynh_hoc_sinh')->withPivot('quan_he')->withTimestamps();
+    }
+
+    public function laPhuHuynh(): bool
+    {
+        return $this->hasRole('phu-huynh');
+    }
+
     public function hoSoGiaoVien()
     {
         return $this->hasOne(HoSoGiaoVien::class);

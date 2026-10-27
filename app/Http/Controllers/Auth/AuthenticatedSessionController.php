@@ -33,7 +33,10 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         $user->update(['last_login_at' => now()]);
 
-        // Redirect về trang dashboard (phân quyền xử lý trong view)
+        if ($user->laPhuHuynh()) {
+            return redirect()->route('phu-huynh.index');
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

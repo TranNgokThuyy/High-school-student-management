@@ -86,6 +86,22 @@
                     </form>
                     @endcan
                 </div>
+                @if($hocSinh->taiKhoanPhuHuynh->isNotEmpty())
+                <div class="small text-start border rounded-2 p-2 mb-2">
+                    <div class="text-muted mb-1">Tài khoản phụ huynh đã liên kết:</div>
+                    @foreach($hocSinh->taiKhoanPhuHuynh as $ph)
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <span>{{ $ph->name }} ({{ $ph->pivot->quan_he }})<br><span class="text-muted">{{ $ph->email }}</span></span>
+                        @can('sua-hoc-sinh')
+                        <form method="POST" action="{{ route('ma-tra-cuu.go-tai-khoan', [$hocSinh, $ph]) }}" onsubmit="return confirm('Gỡ tài khoản này khỏi học sinh?')">
+                            @csrf @method('DELETE')
+                            <button class="btn btn-link btn-sm text-danger p-0" title="Gỡ liên kết"><i class="bi bi-x-circle"></i></button>
+                        </form>
+                        @endcan
+                    </div>
+                    @endforeach
+                </div>
+                @endif
                 @endif
 
                 @php

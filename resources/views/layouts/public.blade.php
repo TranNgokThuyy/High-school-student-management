@@ -17,7 +17,7 @@
     <div class="dau-trang py-3 mb-4 no-print">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="fw-bold"><i class="bi bi-mortarboard-fill text-warning me-2"></i>{{ config('app.ten_truong') }}</div>
-            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Đăng nhập cán bộ</a>
+            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Đăng nhập</a>
         </div>
     </div>
     <div class="container pb-5">@yield('content')</div>
