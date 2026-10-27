@@ -5,8 +5,8 @@
 <style>
 .hanh-kiem-select option[value="Tốt"]        { color: #198754; font-weight:600; }
 .hanh-kiem-select option[value="Khá"]        { color: #0d6efd; font-weight:600; }
-.hanh-kiem-select option[value="Trung bình"] { color: #fd7e14; font-weight:600; }
-.hanh-kiem-select option[value="Yếu"]        { color: #dc3545; font-weight:600; }
+.hanh-kiem-select option[value="Đạt"]      { color: #fd7e14; font-weight:600; }
+.hanh-kiem-select option[value="Chưa đạt"] { color: #dc3545; font-weight:600; }
 .vang-highlight { border-color: #ffc107 !important; background-color: #fff8e1 !important; }
 </style>
 @endpush
@@ -14,7 +14,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="fw-bold mb-1">Nhập hạnh kiểm & Chuyên cần</h4>
+        <h4 class="fw-bold mb-1">Nhập kết quả rèn luyện & Chuyên cần</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
@@ -59,13 +59,13 @@
                     Danh sách — {{ $lop->ten_lop }} ({{ $lop->hocSinh->count() }} HS)
                 </h6>
                 <div class="d-flex align-items-center gap-2">
-                    <small class="text-muted">Đặt tất cả hạnh kiểm:</small>
+                    <small class="text-muted">Đặt tất cả mức rèn luyện:</small>
                     <select id="setAllHK" class="form-select form-select-sm" style="width:130px">
                         <option value="">-- Chọn --</option>
                         <option value="Tốt">Tốt</option>
                         <option value="Khá">Khá</option>
-                        <option value="Trung bình">Trung bình</option>
-                        <option value="Yếu">Yếu</option>
+                        <option value="Đạt">Đạt</option>
+                        <option value="Chưa đạt">Chưa đạt</option>
                     </select>
                     <button type="button" class="btn btn-outline-secondary btn-sm"
                             onclick="setAllHanhKiem()">
@@ -88,7 +88,7 @@
     <tr>
         <th style="width:40px" class="text-center">STT</th>
         <th style="min-width:160px">Họ và tên</th>
-        <th style="width:140px" class="text-center">Hạnh kiểm</th>
+        <th style="width:140px" class="text-center">Rèn luyện</th>
         <th style="width:85px" class="text-center">Tổng buổi</th>
         <th style="width:85px" class="text-center text-warning">Vắng CP</th>
         <th style="width:85px" class="text-center text-danger">Vắng KP</th>
@@ -122,7 +122,7 @@
                                 <select name="hanh_kiem[{{ $hs->id }}][xep_loai]"
                                         class="form-select form-select-sm hanh-kiem-select">
                                     <option value="">-- Chọn --</option>
-                                    @foreach(['Tốt','Khá','Trung bình','Yếu'] as $loai)
+                                    @foreach(\App\Models\HanhKiem::MUC as $loai)
                                         <option value="{{ $loai }}"
                                             {{ ($hk?->xep_loai_hanh_kiem === $loai) ? 'selected' : '' }}>
                                             {{ $loai }}
@@ -170,7 +170,7 @@
     @php $kyKia = $hanhKiemKyKia[$hs->id] ?? null; @endphp
     @if($kyKia?->xep_loai_hanh_kiem)
         @php
-            $hkColors = ['Tốt'=>'success','Khá'=>'primary','Trung bình'=>'warning','Yếu'=>'danger'];
+            $hkColors = \App\Models\HanhKiem::MAU;
             $c = $hkColors[$kyKia->xep_loai_hanh_kiem] ?? 'secondary';
         @endphp
         <span class="badge bg-{{ $c }}">{{ $kyKia->xep_loai_hanh_kiem }}</span>
@@ -185,7 +185,7 @@
     @php $caNam = $hanhKiemCaNam[$hs->id] ?? null; @endphp
     @if($caNam?->xep_loai_hanh_kiem)
         @php
-            $hkColors = ['Tốt'=>'success','Khá'=>'primary','Trung bình'=>'warning','Yếu'=>'danger'];
+            $hkColors = \App\Models\HanhKiem::MAU;
             $c = $hkColors[$caNam->xep_loai_hanh_kiem] ?? 'secondary';
         @endphp
         <span class="badge bg-{{ $c }}">{{ $caNam->xep_loai_hanh_kiem }}</span>

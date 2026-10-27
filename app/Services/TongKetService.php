@@ -46,13 +46,15 @@ class TongKetService
     }
 
     /**
-     * Quy đổi xếp loại hạnh kiểm cũ sang mức rèn luyện TT22.
+     * Mức rèn luyện TT22; vẫn nhận giá trị thang cũ (Trung bình / Yếu) nếu còn sót dữ liệu.
      */
     public static function mucRenLuyen(?string $hanhKiem): ?string
     {
         return match ($hanhKiem) {
             'Tốt'        => 'Tốt',
             'Khá'        => 'Khá',
+            'Đạt'        => 'Đạt',
+            'Chưa đạt'   => 'Chưa đạt',
             'Trung bình' => 'Đạt',
             'Yếu'        => 'Chưa đạt',
             default      => null,

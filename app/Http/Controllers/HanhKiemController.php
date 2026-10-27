@@ -55,7 +55,7 @@ class HanhKiemController extends Controller
         if (!$hk1 || !$hk2) return;
         if (!$hk1->xep_loai_hanh_kiem || !$hk2->xep_loai_hanh_kiem) return;
 
-        $xepLoaiCaNam = $this->xepLoaiCaNam(
+        $xepLoaiCaNam = HanhKiem::xepLoaiCaNam(
             $hk1->xep_loai_hanh_kiem,
             $hk2->xep_loai_hanh_kiem
         );
@@ -81,32 +81,6 @@ class HanhKiemController extends Controller
         $caNam->ghi_chu                 = 'Tự động tính từ HK1 + HK2';
         $caNam->giao_vien_chu_nhiem_id  = auth()->id();
         $caNam->save();
-    }
-
-    private function xepLoaiCaNam(string $hk1, string $hk2): string
-    {
-        $thuTu = ['Tốt' => 4, 'Khá' => 3, 'Trung bình' => 2, 'Yếu' => 1];
-
-        $diemHK1 = $thuTu[$hk1] ?? 0;
-        $diemHK2 = $thuTu[$hk2] ?? 0;
-
-        if ($diemHK1 == 1 || $diemHK2 == 1) {
-            if ($diemHK2 == 1) return 'Yếu';
-            if ($diemHK1 == 1 && $diemHK2 >= 3) return 'Trung bình';
-            return 'Yếu';
-        }
-
-        if ($diemHK1 == 4 && $diemHK2 == 4) return 'Tốt';
-        if ($diemHK2 == 4 && $diemHK1 == 3) return 'Tốt';
-        if ($diemHK2 == 3 && $diemHK1 == 4) return 'Khá';
-        if ($diemHK1 == 3 && $diemHK2 == 3) return 'Khá';
-        if ($diemHK2 == 2 && $diemHK1 == 4) return 'Khá';
-
-        $ketQua = min($diemHK1, $diemHK2);
-        if ($diemHK2 > $diemHK1) $ketQua = min($diemHK2, $ketQua + 1);
-
-        $nguocThuTu = [1 => 'Yếu', 2 => 'Trung bình', 3 => 'Khá', 4 => 'Tốt'];
-        return $nguocThuTu[$ketQua] ?? 'Trung bình';
     }
 
     public function index(Request $request)
@@ -220,6 +194,11 @@ class HanhKiemController extends Controller
             'hoc_ky'     => 'required|in:1,2',
             'nam_hoc'    => 'required|string',
             'hanh_kiem'  => 'required|array',
+            'hanh_kiem.*.xep_loai'        => 'nullable|in:' . implode(',', HanhKiem::MUC),
+            'hanh_kiem.*.so_buoi_hoc'     => 'nullable|integer|min:0|max:300',
+            'hanh_kiem.*.vang_co_phep'    => 'nullable|integer|min:0|max:300',
+            'hanh_kiem.*.vang_khong_phep' => 'nullable|integer|min:0|max:300',
+            'hanh_kiem.*.di_tre'          => 'nullable|integer|min:0|max:300',
         ]);
 
         $lop = LopHoc::findOrFail($request->lop_hoc_id);

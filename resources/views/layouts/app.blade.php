@@ -239,7 +239,7 @@
             
             @can('xem-hanh-kiem')
             <a href="{{ route('hanh-kiem.index') }}" class="nav-link {{ request()->routeIs('hanh-kiem.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-check"></i> Hạnh kiểm & Chuyên cần
+                <i class="bi bi-clipboard-check"></i> Rèn luyện & Chuyên cần
             </a>
             @endcan
             

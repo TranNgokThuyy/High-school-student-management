@@ -84,6 +84,22 @@ class TongKetServiceTest extends TestCase
         $this->assertNull(TongKetService::mucRenLuyen(null));
     }
 
+    public function test_ren_luyen_ca_nam_theo_tt22(): void
+    {
+        $caNam = fn ($hk1, $hk2) => \App\Models\HanhKiem::xepLoaiCaNam($hk1, $hk2);
+        // Tốt: HK2 Tốt, HK1 từ Khá trở lên
+        $this->assertSame('Tốt', $caNam('Khá', 'Tốt'));
+        // Khá: HK2 Khá & HK1 >= Đạt; HK2 Đạt & HK1 Tốt; HK2 Tốt & HK1 Đạt/Chưa đạt
+        $this->assertSame('Khá', $caNam('Đạt', 'Khá'));
+        $this->assertSame('Khá', $caNam('Tốt', 'Đạt'));
+        $this->assertSame('Khá', $caNam('Chưa đạt', 'Tốt'));
+        // Đạt: HK2 Đạt & HK1 Khá/Đạt/Chưa đạt; HK2 Khá & HK1 Chưa đạt
+        $this->assertSame('Đạt', $caNam('Chưa đạt', 'Đạt'));
+        $this->assertSame('Đạt', $caNam('Chưa đạt', 'Khá'));
+        // Còn lại: Chưa đạt
+        $this->assertSame('Chưa đạt', $caNam('Tốt', 'Chưa đạt'));
+    }
+
     public function test_nam_hoc_hien_tai_doi_vao_thang_8(): void
     {
         $this->assertSame('2025-2026', NamHoc::hienTai(Carbon::create(2026, 3, 1)));

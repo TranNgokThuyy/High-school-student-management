@@ -52,8 +52,8 @@
                     <option value="">-- Tất cả --</option>
                     <option value="Tốt"        {{ request('xep_loai') == 'Tốt'        ? 'selected' : '' }}>Tốt</option>
                     <option value="Khá"        {{ request('xep_loai') == 'Khá'        ? 'selected' : '' }}>Khá</option>
-                    <option value="Trung bình" {{ request('xep_loai') == 'Trung bình' ? 'selected' : '' }}>Trung bình</option>
-                    <option value="Yếu"        {{ request('xep_loai') == 'Yếu'        ? 'selected' : '' }}>Yếu</option>
+                    <option value="Đạt"      {{ request('xep_loai') == 'Đạt'      ? 'selected' : '' }}>Đạt</option>
+                    <option value="Chưa đạt" {{ request('xep_loai') == 'Chưa đạt' ? 'selected' : '' }}>Chưa đạt</option>
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-end gap-2">
@@ -76,10 +76,10 @@
         $thongKe   = [
             'Tốt'        => $allItems->where('xep_loai_hanh_kiem', 'Tốt')->count(),
             'Khá'        => $allItems->where('xep_loai_hanh_kiem', 'Khá')->count(),
-            'Trung bình' => $allItems->where('xep_loai_hanh_kiem', 'Trung bình')->count(),
-            'Yếu'        => $allItems->where('xep_loai_hanh_kiem', 'Yếu')->count(),
+            'Đạt'        => $allItems->where('xep_loai_hanh_kiem', 'Đạt')->count(),
+            'Chưa đạt'   => $allItems->where('xep_loai_hanh_kiem', 'Chưa đạt')->count(),
         ];
-        $statColors = ['Tốt'=>'success','Khá'=>'primary','Trung bình'=>'warning','Yếu'=>'danger'];
+        $statColors = \App\Models\HanhKiem::MAU;
     @endphp
     @foreach($thongKe as $loai => $soLuong)
     <div class="col-md-3">
@@ -155,8 +155,8 @@
                                 $hkColors = [
                                     'Tốt'        => 'success',
                                     'Khá'        => 'primary',
-                                    'Trung bình' => 'warning',
-                                    'Yếu'        => 'danger',
+                                    'Đạt'        => 'warning',
+                                    'Chưa đạt'   => 'danger',
                                 ];
                             @endphp
                             <span class="badge bg-{{ $hkColors[$hk->xep_loai_hanh_kiem] ?? 'secondary' }}">

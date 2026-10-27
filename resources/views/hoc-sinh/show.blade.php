@@ -352,7 +352,7 @@
             <div class="card-header bg-white py-3">
                 <h6 class="fw-semibold mb-0">
                     <i class="bi bi-clipboard-check text-warning me-2"></i>
-                    Hạnh kiểm & Chuyên cần
+                    Rèn luyện & Chuyên cần
                 </h6>
             </div>
             <div class="table-responsive">
@@ -380,12 +380,7 @@
                             <td class="text-center">
                                 @if($hk->xep_loai_hanh_kiem)
                                     @php
-                                        $hkColors = [
-                                            'Tốt'        => 'success',
-                                            'Khá'        => 'primary',
-                                            'Trung bình' => 'warning',
-                                            'Yếu'        => 'danger',
-                                        ];
+                                        $hkColors = \App\Models\HanhKiem::MAU;
                                         $hkMau = $hkColors[$hk->xep_loai_hanh_kiem] ?? 'secondary';
                                     @endphp
                                     <span class="badge bg-{{ $hkMau }}">
@@ -421,7 +416,7 @@
             <div class="card-header bg-white py-3">
                 <h6 class="fw-semibold mb-0">
                     <i class="bi bi-clipboard-check text-warning me-2"></i>
-                    Hạnh kiểm & Chuyên cần
+                    Rèn luyện & Chuyên cần
                 </h6>
             </div>
             <div class="card-body text-center py-4 text-muted">

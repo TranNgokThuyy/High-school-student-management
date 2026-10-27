@@ -83,7 +83,7 @@ class DemoDataSeeder extends Seeder
                 HanhKiem::updateOrCreate(
                     ['hoc_sinh_id' => $hs->id, 'lop_hoc_id' => $lopCu->id, 'hoc_ky' => $hk, 'nam_hoc' => $namTruoc],
                     [
-                        'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Trung bình'),
+                        'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Đạt'),
                         'so_buoi_hoc' => 90,
                         'so_buoi_vang_co_phep' => mt_rand(0, 3),
                         'so_buoi_vang_khong_phep' => $i === 6 ? 25 : mt_rand(0, 1),
@@ -95,7 +95,7 @@ class DemoDataSeeder extends Seeder
             HanhKiem::updateOrCreate(
                 ['hoc_sinh_id' => $hs->id, 'lop_hoc_id' => $lopCu->id, 'hoc_ky' => 'Ca năm', 'nam_hoc' => $namTruoc],
                 [
-                    'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Trung bình'),
+                    'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Đạt'),
                     'so_buoi_hoc' => 180,
                     'so_buoi_vang_co_phep' => 2,
                     'so_buoi_vang_khong_phep' => $i === 6 ? 50 : 1,
