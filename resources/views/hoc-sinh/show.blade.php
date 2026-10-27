@@ -30,6 +30,11 @@
             <i class="bi bi-cash-coin me-2"></i>Học phí
         </a>
         @endcan
+        @can('xem-nhat-ky')
+        <a href="{{ route('nhat-ky.index', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-secondary" title="Lịch sử thay đổi điểm, hồ sơ, học phí">
+            <i class="bi bi-clock-history"></i>
+        </a>
+        @endcan
         @can('sua-hoc-sinh')
         <a href="{{ route('hoc-sinh.edit', $hocSinh) }}" class="btn btn-warning">
             <i class="bi bi-pencil me-2"></i>Chỉnh sửa

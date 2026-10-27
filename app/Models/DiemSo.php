@@ -1,11 +1,14 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DiemSo extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'diem_so';
 
     protected $fillable = [
@@ -100,5 +103,10 @@ class DiemSo extends Model
             $this->diem_trung_binh >= 3.5 => 'Yếu',
             default => 'Kém',
         };
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Điểm {$this->monHoc?->ten_mon} HK{$this->hoc_ky} {$this->nam_hoc} — {$this->hocSinh?->ho_ten} ({$this->lopHoc?->ten_lop})";
     }
 }

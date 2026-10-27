@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class PhanCongGiangDay extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'phan_cong_giang_day';
 
     protected $fillable = [
@@ -39,5 +42,10 @@ class PhanCongGiangDay extends Model
             'mon_hoc_id'   => $monHocId,
             'nam_hoc'      => $namHoc,
         ])->whereIn('hoc_ky', [$hocKy, 'Ca năm'])->exists();
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Phân công {$this->giaoVien?->name} dạy {$this->monHoc?->ten_mon} lớp {$this->lopHoc?->ten_lop} ({$this->nam_hoc})";
     }
 }

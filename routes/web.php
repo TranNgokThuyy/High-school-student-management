@@ -20,6 +20,8 @@ use App\Http\Controllers\PhieuDiemController;
 use App\Http\Controllers\TraCuuController;
 use App\Http\Controllers\TinNhanPhuHuynhController;
 use App\Http\Controllers\MaTraCuuController;
+use App\Http\Controllers\NhatKyController;
+use App\Http\Controllers\SaoLuuController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -149,6 +151,18 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     // ===== PHIẾU ĐIỂM CÁ NHÂN =====
     Route::get('/hoc-sinh/{hocSinh}/phieu-diem', [PhieuDiemController::class, 'show'])->name('hoc-sinh.phieu-diem')
         ->middleware('permission:xem-diem');
+
+    // ===== NHẬT KÝ THAO TÁC & SAO LƯU (chỉ quản trị viên) =====
+    Route::middleware('role:quan-tri-vien')->group(function () {
+        Route::get('/nhat-ky', [NhatKyController::class, 'index'])->name('nhat-ky.index')->middleware('permission:xem-nhat-ky');
+
+        Route::middleware('permission:quan-ly-sao-luu')->prefix('sao-luu')->name('sao-luu.')->group(function () {
+            Route::get('/',                 [SaoLuuController::class, 'index'])->name('index');
+            Route::post('/',                [SaoLuuController::class, 'store'])->name('store');
+            Route::get('/{tenTep}/tai-ve',  [SaoLuuController::class, 'download'])->name('download');
+            Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
+        });
+    });
 
     // ===== MÃ TRA CỨU PHỤ HUYNH =====
     Route::get('/lop-hoc/{lopHoc}/phieu-tra-cuu', [MaTraCuuController::class, 'inPhieuLop'])->name('ma-tra-cuu.phieu-lop')

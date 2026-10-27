@@ -24,6 +24,7 @@ class PhanQuyen
         'xem-hoc-phi', 'thu-hoc-phi', 'huy-phieu-thu', 'quan-ly-khoan-thu',
         'dang-thong-bao',
         'gui-tin-phu-huynh',
+        'xem-nhat-ky', 'quan-ly-sao-luu',
     ];
 
     public const VAI_TRO = [

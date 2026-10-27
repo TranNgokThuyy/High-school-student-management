@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class HanhKiem extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'hanh_kiem';
 
     protected $fillable = [
@@ -40,5 +43,10 @@ class HanhKiem extends Model
     {
         if ($this->so_buoi_hoc == 0) return 0;
         return round((($this->so_buoi_hoc - $this->tong_vang) / $this->so_buoi_hoc) * 100, 1);
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Hạnh kiểm {$this->hoc_ky} {$this->nam_hoc} — {$this->hocSinh?->ho_ten} ({$this->lopHoc?->ten_lop})";
     }
 }

@@ -184,7 +184,7 @@ tr:hover .diem-input {
                                        name="diem[{{ $hs->id }}][diem_tx1]"
                                        class="form-control form-control-sm diem-input"
                                        value="{{ old("diem.{$hs->id}.diem_tx1", $d?->diem_tx1) }}"
-                                       min="0" max="10" step="0.25"
+                                       min="0" max="10" step="0.1"
                                        placeholder="—">
                             </td>
 
@@ -194,7 +194,7 @@ tr:hover .diem-input {
                                        name="diem[{{ $hs->id }}][diem_tx2]"
                                        class="form-control form-control-sm diem-input"
                                        value="{{ old("diem.{$hs->id}.diem_tx2", $d?->diem_tx2) }}"
-                                       min="0" max="10" step="0.25"
+                                       min="0" max="10" step="0.1"
                                        placeholder="—">
                             </td>
 
@@ -204,7 +204,7 @@ tr:hover .diem-input {
                                        name="diem[{{ $hs->id }}][diem_tx3]"
                                        class="form-control form-control-sm diem-input"
                                        value="{{ old("diem.{$hs->id}.diem_tx3", $d?->diem_tx3) }}"
-                                       min="0" max="10" step="0.25"
+                                       min="0" max="10" step="0.1"
                                        placeholder="—">
                             </td>
 
@@ -214,7 +214,7 @@ tr:hover .diem-input {
                                        name="diem[{{ $hs->id }}][diem_tx4]"
                                        class="form-control form-control-sm diem-input"
                                        value="{{ old("diem.{$hs->id}.diem_tx4", $d?->diem_tx4) }}"
-                                       min="0" max="10" step="0.25"
+                                       min="0" max="10" step="0.1"
                                        placeholder="—">
                             </td>
 
@@ -224,7 +224,7 @@ tr:hover .diem-input {
                                        name="diem[{{ $hs->id }}][diem_gk]"
                                        class="form-control form-control-sm diem-input border-warning"
                                        value="{{ old("diem.{$hs->id}.diem_gk", $d?->diem_gk) }}"
-                                       min="0" max="10" step="0.25"
+                                       min="0" max="10" step="0.1"
                                        placeholder="—">
                             </td>
 
@@ -234,7 +234,7 @@ tr:hover .diem-input {
                                        name="diem[{{ $hs->id }}][diem_ck]"
                                        class="form-control form-control-sm diem-input border-danger"
                                        value="{{ old("diem.{$hs->id}.diem_ck", $d?->diem_ck) }}"
-                                       min="0" max="10" step="0.25"
+                                       min="0" max="10" step="0.1"
                                        placeholder="—">
                             </td>
 
@@ -269,7 +269,7 @@ tr:hover .diem-input {
                 <i class="bi bi-info-circle me-1"></i>
                 Để trống nếu chưa có điểm &nbsp;|&nbsp;
                 Thang điểm 10 &nbsp;|&nbsp;
-                Bước nhập: 0.25
+                Bước nhập: 0.1
             </small>
             <div class="d-flex gap-2">
                 <a href="{{ route('diem-so.bang-diem', request()->all()) }}"

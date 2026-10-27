@@ -28,6 +28,13 @@ Tên trường in trên phiếu thu / phiếu điểm: biến `TEN_TRUONG` trong
 
 Chạy test: `php artisan test`
 
+### Sao lưu & nhật ký
+
+- Sao lưu tự động 01:30 hằng ngày (giữ 14 bản) — cần cron: `* * * * * cd /đường-dẫn-app && php artisan schedule:run`.
+- Sao lưu thủ công: trang **Sao lưu dữ liệu** hoặc `php artisan sao-luu:tao`; tệp nằm ở `storage/app/private/sao-luu`.
+- Phục hồi: `php artisan sao-luu:phuc-hoi <tên tệp>` (tự sao lưu dữ liệu hiện tại trước khi ghi đè).
+- Nhật ký thao tác ghi mọi thay đổi điểm, hạnh kiểm, hồ sơ học sinh, học phí, lớp, môn, phân công, tài khoản.
+
 ### Gửi email / SMS cho phụ huynh
 
 Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan queue:work` (lệnh `composer dev` đã chạy sẵn).

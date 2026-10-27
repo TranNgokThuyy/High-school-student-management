@@ -1,13 +1,14 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class HocSinh extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, GhiNhatKy;
 
     protected $table = 'hoc_sinh';
 
@@ -124,5 +125,10 @@ class HocSinh extends Model
     public function getSoDienThoaiPhuHuynhAttribute(): ?string
     {
         return $this->so_dien_thoai_me ?: $this->so_dien_thoai_cha ?: null;
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Học sinh {$this->ho_ten} ({$this->ma_hoc_sinh})";
     }
 }

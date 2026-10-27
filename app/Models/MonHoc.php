@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class MonHoc extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'mon_hoc';
 
     protected $fillable = [
@@ -29,5 +32,10 @@ class MonHoc extends Model
     public function phanCongGiangDay()
     {
         return $this->hasMany(PhanCongGiangDay::class, 'mon_hoc_id');
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Môn {$this->ten_mon} ({$this->ma_mon})";
     }
 }

@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class MienGiam extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'mien_giam';
 
     // Đối tượng thường gặp (Nghị định 81/2021/NĐ-CP); có thể nhập đối tượng khác
@@ -26,5 +29,10 @@ class MienGiam extends Model
     public function hocSinh()
     {
         return $this->belongsTo(HocSinh::class, 'hoc_sinh_id');
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Miễn giảm {$this->phan_tram}% {$this->nam_hoc} — {$this->hocSinh?->ho_ten}";
     }
 }
