@@ -26,6 +26,7 @@ use App\Http\Controllers\SoDiemController;
 use App\Http\Controllers\DangKyMonController;
 use App\Http\Controllers\NhapDiemExcelController;
 use App\Http\Controllers\BienDongController;
+use App\Http\Controllers\ThongKeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -95,6 +96,7 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     // ===== BÁO CÁO =====
     Route::prefix('bao-cao')->name('bao-cao.')->group(function () {
         Route::get('/', [BaoCaoController::class, 'index'])->name('index')->middleware('permission:xem-bao-cao');
+        Route::get('/thong-ke', [ThongKeController::class, 'index'])->name('thong-ke')->middleware('permission:xem-bao-cao');
         Route::get('/diem-lop', [BaoCaoController::class, 'baoCaoDiemLop'])->name('diem-lop')->middleware('permission:xem-bao-cao');
         Route::get('/xuat-pdf', [BaoCaoController::class, 'xuatPDF'])->name('xuat-pdf')->middleware('permission:xuat-bao-cao');
         Route::get('/xuat-excel', [BaoCaoController::class, 'xuatExcel'])->name('xuat-excel')->middleware('permission:xuat-bao-cao');

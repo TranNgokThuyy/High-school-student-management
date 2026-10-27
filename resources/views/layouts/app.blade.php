@@ -263,8 +263,11 @@
 
             @can('xem-bao-cao')
             <span class="nav-section">Báo cáo</span>
-            <a href="{{ route('bao-cao.index') }}" class="nav-link {{ request()->routeIs('bao-cao.*') ? 'active' : '' }}">
-                <i class="bi bi-bar-chart-line"></i> Báo cáo & Thống kê
+            <a href="{{ route('bao-cao.index') }}" class="nav-link {{ request()->routeIs('bao-cao.*') && !request()->routeIs('bao-cao.thong-ke') ? 'active' : '' }}">
+                <i class="bi bi-bar-chart-line"></i> Báo cáo
+            </a>
+            <a href="{{ route('bao-cao.thong-ke') }}" class="nav-link {{ request()->routeIs('bao-cao.thong-ke') ? 'active' : '' }}">
+                <i class="bi bi-graph-up"></i> Thống kê
             </a>
             @endcan
             
