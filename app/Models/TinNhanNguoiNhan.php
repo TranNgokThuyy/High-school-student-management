@@ -16,7 +16,7 @@ class TinNhanNguoiNhan extends Model
 
     protected $fillable = [
         'tin_nhan_id', 'hoc_sinh_id', 'noi_dung', 'email', 'so_dien_thoai',
-        'trang_thai_email', 'trang_thai_sms', 'trang_thai_zalo', 'loi', 'da_xem_luc',
+        'trang_thai_email', 'trang_thai_sms', 'loi', 'da_xem_luc',
     ];
 
     protected $casts = ['da_xem_luc' => 'datetime'];

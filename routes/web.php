@@ -31,7 +31,6 @@ use App\Http\Controllers\KyThiController;
 use App\Http\Controllers\GiaoVienController;
 use App\Http\Controllers\PhuHuynhController;
 use App\Http\Controllers\BaoMatController;
-use App\Http\Controllers\ZaloOaController;
 use App\Http\Controllers\Auth\XacThucHaiBuocController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
@@ -211,10 +210,6 @@ Route::middleware(['auth', 'verified', 'check.active', 'can-bo'])->group(functio
             Route::get('/{tenTep}/tai-ve',  [SaoLuuController::class, 'download'])->name('download');
             Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
         });
-
-        Route::get('/zalo-oa',            [ZaloOaController::class, 'index'])->name('zalo-oa.index');
-        Route::post('/zalo-oa',           [ZaloOaController::class, 'luu'])->name('zalo-oa.luu');
-        Route::post('/zalo-oa/lam-moi',   [ZaloOaController::class, 'lamMoi'])->name('zalo-oa.lam-moi');
     });
 
     // ===== HỒ SƠ GIÁO VIÊN & GIỜ DẠY =====

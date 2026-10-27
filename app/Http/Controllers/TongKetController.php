@@ -78,7 +78,7 @@ class TongKetController extends Controller
             'lop_hoc_id' => 'required|exists:lop_hoc,id',
             'hoc_ky'     => 'required|in:1,2,Ca năm',
             'kenh'       => 'nullable|array',
-            'kenh.*'     => 'in:email,sms,zalo',
+            'kenh.*'     => 'in:email,sms',
         ]);
 
         $lop = LopHoc::findOrFail($request->lop_hoc_id);

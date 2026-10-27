@@ -335,11 +335,6 @@
                 <i class="bi bi-database-check"></i> Sao lưu dữ liệu
             </a>
             @endcan
-            @role('quan-tri-vien')
-            <a href="{{ route('zalo-oa.index') }}" class="nav-link {{ request()->routeIs('zalo-oa.*') ? 'active' : '' }}">
-                <i class="bi bi-chat-square-text"></i> Kết nối Zalo OA
-            </a>
-            @endrole
             @endif
         </div>
     </nav>

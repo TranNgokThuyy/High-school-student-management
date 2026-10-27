@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Services\Sms\LogSmsGateway;
 use App\Services\Sms\SmsGateway;
 use App\Services\Sms\WebhookSmsGateway;
-use App\Services\Sms\ZaloZnsGateway;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -22,11 +21,6 @@ class AppServiceProvider extends ServiceProvider
                 ? new WebhookSmsGateway(config('services.sms.webhook_url'), config('services.sms.token'))
                 : new LogSmsGateway();
         });
-
-        $this->app->bind(ZaloZnsGateway::class, fn ($app) => new ZaloZnsGateway(
-            $app->make(\App\Services\Sms\ZaloTokenService::class),
-            config('services.zalo.template_id'),
-        ));
     }
 
     /**

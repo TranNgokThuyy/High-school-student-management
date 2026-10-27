@@ -47,14 +47,7 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
   Mặc định `MAIL_MAILER=log` chỉ ghi email vào `storage/logs/laravel.log`.
 - **SMS**: `SMS_DRIVER=log` (mặc định, chỉ ghi log) hoặc `SMS_DRIVER=webhook` để gửi
   `POST {"to": "<số điện thoại>", "message": "<nội dung>"}` kèm `Authorization: Bearer <SMS_WEBHOOK_TOKEN>`
-  tới `SMS_WEBHOOK_URL` — nối tới nhà cung cấp SMS brandname / Zalo ZNS mà trường đăng ký.
-- **Zalo ZNS**: điền `ZALO_ZNS_ACCESS_TOKEN` (access token của Zalo Official Account) và `ZALO_ZNS_TEMPLATE_ID`
-  (mẫu tin đã được Zalo duyệt, khai báo các tham số `ho_ten`, `lop`, `tieu_de`, `noi_dung`). Chưa cấu hình thì kênh Zalo
-  tự ẩn.
-- **Tự làm mới token Zalo OA**: access token chỉ sống khoảng 25 giờ. Khai báo `ZALO_APP_ID`, `ZALO_APP_SECRET` (ứng dụng trên
-  developers.zalo.me) rồi nhập access token + refresh token một lần ở trang **Kết nối Zalo OA** (hoặc `ZALO_OA_REFRESH_TOKEN`).
-  Lệnh `php artisan zalo:lam-moi-token` chạy mỗi giờ (cần cron `schedule:run`) và làm mới khi token còn dưới 3 giờ;
-  token lưu mã hóa trong CSDL. Ngừng làm mới quá 3 tháng thì refresh token hết hạn, phải nhập lại.
+  tới `SMS_WEBHOOK_URL` — nối tới nhà cung cấp SMS brandname mà trường đăng ký.
 - Email phụ huynh nhập ở hồ sơ học sinh hoặc cột `email_phu_huynh` khi nhập Excel; SMS gửi tới số của mẹ, nếu trống thì của cha.
 
 ## Chức năng
@@ -113,7 +106,7 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
 | Thu tiền, khoản thu, miễn giảm, sổ thu | ✔ | | | ✔ |
 | Hủy phiếu thu | ✔ | | | |
 | Gửi tin nhắn phụ huynh | ✔ toàn trường | lớp chủ nhiệm | | ✔ toàn trường |
-| Kỳ thi, biến động học sinh, giáo viên & giờ dạy, xuất dữ liệu Sở, Zalo OA | ✔ | | | |
+| Kỳ thi, biến động học sinh, giáo viên & giờ dạy, xuất dữ liệu Sở | ✔ | | | |
 | Đăng ký môn lựa chọn | ✔ | lớp chủ nhiệm | | |
 
 Tài khoản **phụ huynh** chỉ vào được cổng `/phu-huynh` (con của mình), không vào được trang cán bộ hay API.

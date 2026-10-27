@@ -86,7 +86,6 @@
             <input type="hidden" name="lop_hoc_id" value="{{ $lop->id }}">
             <div class="form-check form-check-inline mb-0 small"><input class="form-check-input" type="checkbox" name="kenh[]" value="email" id="nnEmail" checked><label class="form-check-label" for="nnEmail">Email</label></div>
             <div class="form-check form-check-inline mb-0 small"><input class="form-check-input" type="checkbox" name="kenh[]" value="sms" id="nnSms"><label class="form-check-label" for="nnSms">SMS</label></div>
-            <div class="form-check form-check-inline mb-0 small"><input class="form-check-input" type="checkbox" name="kenh[]" value="zalo" id="nnZalo"><label class="form-check-label" for="nnZalo">Zalo</label></div>
             <button class="btn btn-sm btn-warning"><i class="bi bi-bell me-1"></i>Nhắc phụ huynh nộp tiền</button>
         </form>
         @endif
