@@ -23,8 +23,8 @@ class AppServiceProvider extends ServiceProvider
                 : new LogSmsGateway();
         });
 
-        $this->app->bind(ZaloZnsGateway::class, fn () => new ZaloZnsGateway(
-            config('services.zalo.access_token'),
+        $this->app->bind(ZaloZnsGateway::class, fn ($app) => new ZaloZnsGateway(
+            $app->make(\App\Services\Sms\ZaloTokenService::class),
             config('services.zalo.template_id'),
         ));
     }

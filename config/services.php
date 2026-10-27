@@ -33,6 +33,10 @@ return [
     'zalo' => [
         'access_token' => env('ZALO_ZNS_ACCESS_TOKEN'),
         'template_id' => env('ZALO_ZNS_TEMPLATE_ID'),
+        // Tự làm mới token: ID và khóa bí mật của ứng dụng trên developers.zalo.me, refresh token ban đầu
+        'app_id' => env('ZALO_APP_ID'),
+        'app_secret' => env('ZALO_APP_SECRET'),
+        'refresh_token' => env('ZALO_OA_REFRESH_TOKEN'),
     ],
 
     'ses' => [
