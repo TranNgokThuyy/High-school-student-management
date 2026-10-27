@@ -25,9 +25,9 @@ class PhuHuynhController extends Controller
     public function dangKy(Request $request)
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email|max:255|unique:users,email',
-            'phone'       => 'nullable|string|max:20',
+            'name'        => ['required', 'string', 'max:255', new \App\Rules\HoTen()],
+            'email'       => 'required|email:rfc|max:255|unique:users,email',
+            'phone'       => ['nullable', new \App\Rules\SoDienThoai()],
             'password'    => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'quan_he'     => 'required|in:' . implode(',', self::QUAN_HE),
             'ma_hoc_sinh' => 'required|string|max:30',

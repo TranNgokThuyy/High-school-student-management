@@ -90,15 +90,20 @@ class DiemSoController extends Controller
             'hoc_ky' => 'required|in:1,2',
             'nam_hoc' => 'required|string',
             'diem' => 'required|array',
-            'diem.*.diem_tx1' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_tx2' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_tx3' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_tx4' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_gk' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_ck' => 'nullable|numeric|min:0|max:10',
+            'diem.*.diem_tx1' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_tx2' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_tx3' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_tx4' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_gk' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_ck' => 'nullable|numeric|decimal:0,2|min:0|max:10',
             'diem.*.nhan_xet' => 'nullable|array',
             'diem.*.nhan_xet.*' => 'nullable|in:Đ,CĐ',
+        ], [
+            'diem.*.*.decimal' => 'Điểm chỉ được có tối đa 2 chữ số thập phân.',
+            'diem.*.*.max'     => 'Điểm phải từ 0 đến 10.',
+            'diem.*.*.min'     => 'Điểm phải từ 0 đến 10.',
         ]);
+        $this->kiemTraNamHocCuaLop($request);
 
         $mon = MonHoc::findOrFail($request->mon_hoc_id);
 
@@ -134,6 +139,17 @@ class DiemSoController extends Controller
             'hoc_ky' => $request->hoc_ky,
             'nam_hoc' => $request->nam_hoc,
         ])->with('success', 'Đã lưu điểm thành công!');
+    }
+
+    // Điểm phải gắn đúng năm học của lớp, tránh lưu nhầm sang năm khác khi sửa tham số trên URL
+    private function kiemTraNamHocCuaLop(Request $request): void
+    {
+        $namHocLop = \App\Models\LopHoc::whereKey($request->lop_hoc_id)->value('nam_hoc');
+        if ($namHocLop !== $request->nam_hoc) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'nam_hoc' => "Lớp này thuộc năm học {$namHocLop}, không phải {$request->nam_hoc}.",
+            ]);
+        }
     }
 
     private function kiemTraPhanCong(Request $request): void

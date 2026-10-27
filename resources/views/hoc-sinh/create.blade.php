@@ -52,7 +52,7 @@
                         
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Ngày sinh <span class="text-danger">*</span></label>
-                            <input type="date" name="ngay_sinh" class="form-control @error('ngay_sinh') is-invalid @enderror" 
+                            <input type="date" name="ngay_sinh" min="{{ today()->subYears(30)->toDateString() }}" max="{{ today()->subYears(10)->toDateString() }}" class="form-control @error('ngay_sinh') is-invalid @enderror" 
                                    value="{{ old('ngay_sinh') }}" required>
                             @error('ngay_sinh')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

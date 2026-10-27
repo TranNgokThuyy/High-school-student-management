@@ -22,5 +22,6 @@
         </div>
     </div>
     <div class="container pb-5">@yield('content')</div>
+    @include('partials.kiem-tra-form')
 </body>
 </html>

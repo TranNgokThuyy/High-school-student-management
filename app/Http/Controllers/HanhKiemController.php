@@ -199,10 +199,31 @@ class HanhKiemController extends Controller
             'hanh_kiem.*.vang_co_phep'    => 'nullable|integer|min:0|max:300',
             'hanh_kiem.*.vang_khong_phep' => 'nullable|integer|min:0|max:300',
             'hanh_kiem.*.di_tre'          => 'nullable|integer|min:0|max:300',
+            'hanh_kiem.*.ghi_chu'         => 'nullable|string|max:255',
         ]);
 
         $lop = LopHoc::findOrFail($request->lop_hoc_id);
         $this->kiemTraQuyenLop($lop);
+
+        // Chỉ nhận học sinh của lớp, đúng năm học của lớp; số buổi vắng không vượt số buổi học
+        $tenHocSinh = $lop->hocSinh()->pluck('ho_ten', 'id');
+        $loi = [];
+        if ($request->nam_hoc !== $lop->nam_hoc) {
+            $loi['nam_hoc'] = "Lớp này thuộc năm học {$lop->nam_hoc}.";
+        }
+        foreach ($request->hanh_kiem as $hocSinhId => $data) {
+            if (!$tenHocSinh->has($hocSinhId)) {
+                $loi["hanh_kiem.{$hocSinhId}"] = 'Có học sinh không thuộc lớp này.';
+                continue;
+            }
+            $vang = (int) ($data['vang_co_phep'] ?? 0) + (int) ($data['vang_khong_phep'] ?? 0);
+            if (filled($data['so_buoi_hoc'] ?? null) && $vang > (int) $data['so_buoi_hoc']) {
+                $loi["hanh_kiem.{$hocSinhId}.vang_khong_phep"] = "{$tenHocSinh[$hocSinhId]}: tổng số buổi vắng ({$vang}) lớn hơn số buổi học ({$data['so_buoi_hoc']}).";
+            }
+        }
+        if ($loi) {
+            throw \Illuminate\Validation\ValidationException::withMessages($loi);
+        }
 
         $soLuong   = 0;
         $tinhCaNam = 0;

@@ -21,7 +21,7 @@ class KyThiController extends Controller
     {
         $kyThi = KyThi::create($request->validate([
             'ten'            => 'required|string|max:150',
-            'nam_hoc'        => 'required|regex:/^\d{4}-\d{4}$/',
+            'nam_hoc'        => ['required', new \App\Rules\NamHoc()],
             'hoc_ky'         => 'required|in:1,2',
             'khoi'           => 'required|in:10,11,12,Tất cả',
             'suc_chua_phong' => 'required|integer|min:5|max:60',

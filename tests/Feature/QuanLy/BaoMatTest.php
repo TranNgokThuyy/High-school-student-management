@@ -99,7 +99,7 @@ class BaoMatTest extends QuanLyTestCase
         // Quản trị viên gỡ 2FA cho người dùng mất điện thoại
         $gv->forceFill(['two_factor_secret' => Totp::taoKhoa(), 'two_factor_confirmed_at' => now()])->save();
         $this->actingAs($admin->fresh())->put("/tai-khoan/{$gv->id}", [
-            'name' => $gv->name, 'email' => $gv->email, 'role' => 'giao-vien-bo-mon', 'is_active' => 1, 'dat_lai_2fa' => 1,
+            'name' => 'Lê Văn Giáo', 'email' => $gv->email, 'role' => 'giao-vien-bo-mon', 'is_active' => 1, 'dat_lai_2fa' => 1,
         ])->assertRedirect();
         $this->assertFalse($gv->fresh()->daBatHaiBuoc());
     }

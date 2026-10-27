@@ -445,6 +445,7 @@
         }, 4000);
     </script>
     
+    @include('partials.kiem-tra-form')
     @stack('scripts')
 </body>
 </html>

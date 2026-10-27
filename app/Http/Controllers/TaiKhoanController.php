@@ -38,10 +38,10 @@ class TaiKhoanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users|max:100',
-            'phone' => 'nullable|string|max:15',
-            'password' => 'required|min:8|confirmed',
+            'name' => ['required', 'string', 'max:100', new \App\Rules\HoTen()],
+            'email' => 'required|email:rfc|unique:users|max:100',
+            'phone' => ['nullable', new \App\Rules\SoDienThoai()],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
             'role' => 'required|exists:roles,name',
             'is_active' => 'boolean',
         ], [
@@ -74,10 +74,10 @@ class TaiKhoanController extends Controller
     public function update(Request $request, User $taiKhoan)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => "required|email|unique:users,email,{$taiKhoan->id}|max:100",
-            'phone' => 'nullable|string|max:15',
-            'password' => 'nullable|min:8|confirmed',
+            'name' => ['required', 'string', 'max:100', new \App\Rules\HoTen()],
+            'email' => "required|email:rfc|unique:users,email,{$taiKhoan->id}|max:100",
+            'phone' => ['nullable', new \App\Rules\SoDienThoai()],
+            'password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
             'role' => 'required|exists:roles,name',
             'is_active' => 'boolean',
         ]);
