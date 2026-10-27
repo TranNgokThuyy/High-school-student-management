@@ -98,6 +98,8 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
         Route::get('/diem-lop', [BaoCaoController::class, 'baoCaoDiemLop'])->name('diem-lop')->middleware('permission:xem-bao-cao');
         Route::get('/xuat-pdf', [BaoCaoController::class, 'xuatPDF'])->name('xuat-pdf')->middleware('permission:xuat-bao-cao');
         Route::get('/xuat-excel', [BaoCaoController::class, 'xuatExcel'])->name('xuat-excel')->middleware('permission:xuat-bao-cao');
+        // Chứa mã định danh, địa chỉ... nên chỉ quản trị viên
+        Route::get('/xuat-du-lieu', [BaoCaoController::class, 'xuatDuLieu'])->name('xuat-du-lieu')->middleware('role:quan-tri-vien');
     });
 
     // ===== QUẢN LÝ TÀI KHOẢN (Chỉ admin) =====

@@ -112,4 +112,18 @@ class BaoCaoController extends Controller
             $tenFile
         );
     }
+
+    // Xuất dữ liệu toàn trường một năm học (hồ sơ, kết quả, điểm, biến động, thống kê) để nộp / đối chiếu với Sở
+    public function xuatDuLieu(Request $request, \App\Services\XuatDuLieuService $xuat)
+    {
+        $request->validate(['nam_hoc' => 'required|regex:/^\d{4}-\d{4}$/']);
+
+        $spreadsheet = $xuat->taoSpreadsheet($request->nam_hoc);
+
+        return response()->streamDownload(
+            fn () => (new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet))->save('php://output'),
+            "du-lieu-toan-truong-{$request->nam_hoc}.xlsx",
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+        );
+    }
 }

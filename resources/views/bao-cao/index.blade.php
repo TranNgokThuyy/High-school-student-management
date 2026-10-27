@@ -11,6 +11,22 @@
     </div>
 </div>
 
+@role('quan-tri-vien')
+<div class="card table-card mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+        <div>
+            <div class="fw-semibold"><i class="bi bi-database-down text-success me-1"></i>Xuất dữ liệu toàn trường (nộp / đối chiếu với Sở)</div>
+            <div class="small text-muted">Hồ sơ học sinh, kết quả cuối năm, điểm các môn, biến động, thống kê theo khối — tệp tổng hợp, đối chiếu cột với mẫu của Sở trước khi nộp.</div>
+        </div>
+        <form method="GET" action="{{ route('bao-cao.xuat-du-lieu') }}" class="d-flex gap-2 ms-auto">
+            <input type="text" name="nam_hoc" class="form-control" style="width:130px" pattern="\d{4}-\d{4}" required
+                   value="{{ \App\Support\NamHoc::hienTai() }}">
+            <button class="btn btn-success"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
+        </form>
+    </div>
+</div>
+@endrole
+
 <div class="row g-4">
     {{-- Card báo cáo điểm --}}
     <div class="col-lg-8">
