@@ -68,6 +68,35 @@ class DiemSo extends Model
         return round($tongDiem / $heSo, 2);
     }
 
+    public const COT_DIEM = ['diem_tx1', 'diem_tx2', 'diem_tx3', 'diem_tx4', 'diem_gk', 'diem_ck'];
+
+    /**
+     * Gán điểm (hoặc nhận xét Đ / CĐ) rồi tính lại kết quả môn.
+     * $giuGiaTriCu = true: ô không có dữ liệu thì giữ nguyên giá trị đang có (dùng khi nhập từ Excel).
+     */
+    public function ganDiem(array $duLieu, MonHoc $mon, bool $giuGiaTriCu = false): void
+    {
+        if ($mon->laMonNhanXet()) {
+            $moi = collect($duLieu['nhan_xet'] ?? [])->only(self::COT_NHAN_XET);
+            $nhanXet = $giuGiaTriCu
+                ? array_merge($this->nhan_xet ?? [], $moi->filter()->all())
+                : $moi->filter()->all();
+            $this->nhan_xet = $nhanXet ?: null;
+            $this->ket_qua_nhan_xet = $this->tinhKetQuaNhanXet();
+
+            return;
+        }
+
+        foreach (self::COT_DIEM as $cot) {
+            $giaTri = $duLieu[$cot] ?? null;
+            if ($giuGiaTriCu && ($giaTri === null || $giaTri === '')) {
+                continue;
+            }
+            $this->$cot = $giaTri === '' ? null : $giaTri;
+        }
+        $this->diem_trung_binh = $this->tinhDiemTrungBinh();
+    }
+
     // Môn nhận xét (TT22 Điều 9): Đạt khi ĐĐGck Đạt và ít nhất 2/3 số lần đánh giá Đạt
     public function tinhKetQuaNhanXet(): ?string
     {

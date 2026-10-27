@@ -24,6 +24,7 @@ use App\Http\Controllers\NhatKyController;
 use App\Http\Controllers\SaoLuuController;
 use App\Http\Controllers\SoDiemController;
 use App\Http\Controllers\DangKyMonController;
+use App\Http\Controllers\NhapDiemExcelController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -78,6 +79,8 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
         Route::get('/', [DiemSoController::class, 'bangDiem'])->name('bang-diem')->middleware('permission:xem-diem');
         Route::get('/nhap-diem', [DiemSoController::class, 'nhapDiem'])->name('nhap-diem')->middleware('permission:them-diem');
         Route::post('/luu-diem', [DiemSoController::class, 'luuDiem'])->name('luu-diem')->middleware('permission:them-diem');
+        Route::get('/mau-excel', [NhapDiemExcelController::class, 'taiMau'])->name('mau-excel')->middleware('permission:them-diem');
+        Route::post('/nhap-excel', [NhapDiemExcelController::class, 'taiLen'])->name('nhap-excel')->middleware('permission:them-diem');
     });
 
     // ===== HẠNH KIỂM =====

@@ -53,6 +53,31 @@ tr:hover .diem-input {
     </div>
 </div>
 
+{{-- Nhập điểm từ Excel --}}
+@if(session('loi_excel'))
+<div class="alert alert-warning small">
+    <b>Các dòng bị bỏ qua:</b>
+    <ul class="mb-0">@foreach(session('loi_excel') as $loi)<li>{{ $loi }}</li>@endforeach</ul>
+</div>
+@endif
+<div class="card table-card mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+        <div class="fw-semibold"><i class="bi bi-file-earmark-excel text-success me-1"></i>Nhập từ Excel</div>
+        <a href="{{ route('diem-so.mau-excel', $request->only('lop_hoc_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc')) }}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-download me-1"></i>Tải mẫu (có sẵn danh sách & điểm hiện có)
+        </a>
+        <form method="POST" action="{{ route('diem-so.nhap-excel') }}" enctype="multipart/form-data" class="d-flex gap-2 align-items-center flex-wrap">
+            @csrf
+            @foreach(['lop_hoc_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc'] as $truong)
+                <input type="hidden" name="{{ $truong }}" value="{{ $request->$truong }}">
+            @endforeach
+            <input type="file" name="file" accept=".xlsx,.xls" class="form-control form-control-sm" style="max-width:260px" required>
+            <button class="btn btn-sm btn-success"><i class="bi bi-upload me-1"></i>Tải lên & lưu</button>
+        </form>
+        <small class="text-muted">Ô trống giữ nguyên điểm cũ.</small>
+    </div>
+</div>
+
 <form method="POST" action="{{ route('diem-so.luu-diem') }}">
     @csrf
     <input type="hidden" name="lop_hoc_id" value="{{ $request->lop_hoc_id }}">

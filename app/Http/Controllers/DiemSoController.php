@@ -123,24 +123,7 @@ class DiemSoController extends Controller
                 ]);
 
                 $record->giao_vien_id = auth()->id();
-
-                if ($mon->laMonNhanXet()) {
-                    // Môn đánh giá bằng nhận xét: lưu Đ / CĐ cho từng lần đánh giá
-                    $record->nhan_xet = collect($diemData['nhan_xet'] ?? [])
-                        ->only(DiemSo::COT_NHAN_XET)->filter()->all() ?: null;
-                    $record->ket_qua_nhan_xet = $record->tinhKetQuaNhanXet();
-                } else {
-                    $record->fill([
-                        'diem_tx1' => $diemData['diem_tx1'] ?? null,
-                        'diem_tx2' => $diemData['diem_tx2'] ?? null,
-                        'diem_tx3' => $diemData['diem_tx3'] ?? null,
-                        'diem_tx4' => $diemData['diem_tx4'] ?? null,
-                        'diem_gk' => $diemData['diem_gk'] ?? null,
-                        'diem_ck' => $diemData['diem_ck'] ?? null,
-                    ]);
-                    $record->diem_trung_binh = $record->tinhDiemTrungBinh();
-                }
-
+                $record->ganDiem($diemData, $mon);
                 $record->save();
             }
         });
