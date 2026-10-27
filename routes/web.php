@@ -19,6 +19,7 @@ use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\PhieuDiemController;
 use App\Http\Controllers\TraCuuController;
 use App\Http\Controllers\TinNhanPhuHuynhController;
+use App\Http\Controllers\MaTraCuuController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -148,6 +149,12 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     // ===== PHIẾU ĐIỂM CÁ NHÂN =====
     Route::get('/hoc-sinh/{hocSinh}/phieu-diem', [PhieuDiemController::class, 'show'])->name('hoc-sinh.phieu-diem')
         ->middleware('permission:xem-diem');
+
+    // ===== MÃ TRA CỨU PHỤ HUYNH =====
+    Route::get('/lop-hoc/{lopHoc}/phieu-tra-cuu', [MaTraCuuController::class, 'inPhieuLop'])->name('ma-tra-cuu.phieu-lop')
+        ->middleware('permission:xem-hoc-sinh');
+    Route::post('/hoc-sinh/{hocSinh}/cap-lai-ma-tra-cuu', [MaTraCuuController::class, 'capLai'])->name('ma-tra-cuu.cap-lai')
+        ->middleware('permission:sua-hoc-sinh');
 
     // ===== TIN NHẮN PHỤ HUYNH =====
     Route::prefix('tin-nhan')->name('tin-nhan.')->middleware('permission:gui-tin-phu-huynh')->group(function () {

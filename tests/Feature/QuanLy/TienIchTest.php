@@ -32,7 +32,7 @@ class TienIchTest extends QuanLyTestCase
         $this->actingAs($gv)->get('/dashboard')->assertDontSee('Cũ rồi');
     }
 
-    public function test_phu_huynh_tra_cuu_bang_ma_va_ngay_sinh(): void
+    public function test_phu_huynh_tra_cuu_bang_ma_tra_cuu(): void
     {
         $lop = $this->taoLop();
         $hs = $this->taoHocSinh($lop, 'Nguyễn Tra Cứu');
@@ -41,24 +41,51 @@ class TienIchTest extends QuanLyTestCase
         DiemSo::create(['hoc_sinh_id' => $hs->id, 'mon_hoc_id' => $mon->id, 'lop_hoc_id' => $lop->id,
             'hoc_ky' => '1', 'nam_hoc' => $lop->nam_hoc, 'diem_trung_binh' => 8.25]);
 
-        $this->post('/tra-cuu', ['ma_hoc_sinh' => strtolower($hs->ma_hoc_sinh), 'ngay_sinh' => '2010-01-01'])
+        $this->assertMatchesRegularExpression('/^[A-HJ-NP-Z2-9]{8}$/', $hs->ma_tra_cuu);
+
+        // Mã nhập chữ thường, có gạch nối vẫn được chấp nhận
+        $maNhap = strtolower(substr($hs->ma_tra_cuu, 0, 4) . '-' . substr($hs->ma_tra_cuu, 4));
+        $this->post('/tra-cuu', ['ma_hoc_sinh' => strtolower($hs->ma_hoc_sinh), 'ma_tra_cuu' => $maNhap])
             ->assertOk()
             ->assertSee('Nguyễn Tra Cứu')
             ->assertSee('8.3')
             ->assertDontSee('012345678901')
             ->assertDontSee('Số 1 Phố Bí Mật');
 
-        $this->post('/tra-cuu', ['ma_hoc_sinh' => $hs->ma_hoc_sinh, 'ngay_sinh' => '2010-01-02'])
+        // Ngày sinh không còn dùng để tra cứu
+        $this->post('/tra-cuu', ['ma_hoc_sinh' => $hs->ma_hoc_sinh, 'ngay_sinh' => '2010-01-01'])
+            ->assertSessionHasErrors('ma_tra_cuu');
+        $this->post('/tra-cuu', ['ma_hoc_sinh' => $hs->ma_hoc_sinh, 'ma_tra_cuu' => 'AAAAAAAA'])
             ->assertSessionHasErrors('ma_hoc_sinh');
+    }
+
+    public function test_cap_lai_ma_tra_cuu_va_in_phieu_lop(): void
+    {
+        $gv = $this->taoUser('giao-vien-chu-nhiem');
+        $lop = $this->taoLop(['giao_vien_chu_nhiem_id' => $gv->id]);
+        $hs = $this->taoHocSinh($lop);
+        $maCu = $hs->ma_tra_cuu;
+
+        $this->actingAs($gv)->get("/lop-hoc/{$lop->id}/phieu-tra-cuu")->assertOk()->assertSee($maCu);
+        $this->actingAs($gv)->post("/hoc-sinh/{$hs->id}/cap-lai-ma-tra-cuu")->assertSessionHas('success');
+        $this->assertNotSame($maCu, $hs->fresh()->ma_tra_cuu);
+
+        auth()->logout();
+        $this->post('/tra-cuu', ['ma_hoc_sinh' => $hs->ma_hoc_sinh, 'ma_tra_cuu' => $maCu])->assertSessionHasErrors();
+
+        // Giáo viên lớp khác không xem / cấp lại được
+        $gvKhac = $this->taoUser('giao-vien-chu-nhiem');
+        $this->actingAs($gvKhac)->get("/lop-hoc/{$lop->id}/phieu-tra-cuu")->assertForbidden();
+        $this->actingAs($gvKhac)->post("/hoc-sinh/{$hs->id}/cap-lai-ma-tra-cuu")->assertForbidden();
     }
 
     public function test_tra_cuu_gioi_han_so_lan(): void
     {
         for ($i = 0; $i < 10; $i++) {
-            $this->post('/tra-cuu', ['ma_hoc_sinh' => 'HS0', 'ngay_sinh' => '2010-01-01']);
+            $this->post('/tra-cuu', ['ma_hoc_sinh' => 'HS0', 'ma_tra_cuu' => 'AAAAAAAA']);
         }
 
-        $this->post('/tra-cuu', ['ma_hoc_sinh' => 'HS0', 'ngay_sinh' => '2010-01-01'])->assertStatus(429);
+        $this->post('/tra-cuu', ['ma_hoc_sinh' => 'HS0', 'ma_tra_cuu' => 'AAAAAAAA'])->assertStatus(429);
     }
 
     public function test_in_phieu_diem_pdf(): void

@@ -150,7 +150,7 @@ class TinNhanPhuHuynhTest extends QuanLyTestCase
         ]);
         auth()->logout();
 
-        $this->post('/tra-cuu', ['ma_hoc_sinh' => $hs->ma_hoc_sinh, 'ngay_sinh' => '2010-01-01'])
+        $this->post('/tra-cuu', ['ma_hoc_sinh' => $hs->ma_hoc_sinh, 'ma_tra_cuu' => $hs->ma_tra_cuu])
             ->assertOk()->assertSee('Lịch nghỉ Tết')->assertSee('1 mới');
 
         $this->assertNotNull(TinNhanNguoiNhan::first()->da_xem_luc);

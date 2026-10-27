@@ -62,6 +62,18 @@
 
                 <h5 class="fw-bold mb-1">{{ $hocSinh->ho_ten }}</h5>
                 <p class="text-muted mb-2 small">{{ $hocSinh->ma_hoc_sinh }}</p>
+                @if(auth()->user()->hasRole('quan-tri-vien') || $hocSinh->lopHoc?->giao_vien_chu_nhiem_id == auth()->id())
+                <div class="small mb-2">
+                    Mã tra cứu PH: <code class="fs-6">{{ $hocSinh->ma_tra_cuu }}</code>
+                    @can('sua-hoc-sinh')
+                    <form method="POST" action="{{ route('ma-tra-cuu.cap-lai', $hocSinh) }}" class="d-inline"
+                          onsubmit="return confirm('Cấp mã tra cứu mới? Mã cũ sẽ không dùng được nữa.')">
+                        @csrf
+                        <button class="btn btn-link btn-sm p-0 ms-1" title="Cấp lại mã"><i class="bi bi-arrow-repeat"></i></button>
+                    </form>
+                    @endcan
+                </div>
+                @endif
 
                 @php
                     $trangThaiColors = [

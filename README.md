@@ -62,7 +62,7 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
   gửi qua trang tra cứu (luôn có), email và SMS; theo dõi trạng thái từng người nhận, đã xem, gửi lại tin lỗi.
   Tự động: báo vắng không phép khi điểm danh, nhắc nộp học phí (kèm số tiền từng khoản), gửi kết quả học kỳ / cả năm,
   báo khen thưởng - kỷ luật.
-- **Tra cứu cho phụ huynh** (`/tra-cuu`, không cần đăng nhập): mã học sinh + ngày sinh → điểm, kết quả học tập/rèn luyện,
+- **Tra cứu cho phụ huynh** (`/tra-cuu`, không cần đăng nhập): mã học sinh + **mã tra cứu riêng** (8 ký tự ngẫu nhiên, in phiếu theo lớp, cấp lại được) → điểm, kết quả học tập/rèn luyện,
   vắng 30 ngày gần đây, học phí còn nợ. Không hiển thị CCCD/địa chỉ/SĐT; giới hạn 10 lượt/phút.
 - **Báo cáo**: bảng điểm lớp, xuất PDF / Excel.
 - **Tài khoản**: chỉ quản trị viên quản lý; tài khoản tự đăng ký phải chờ kích hoạt.

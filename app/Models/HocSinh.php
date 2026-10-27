@@ -16,7 +16,7 @@ class HocSinh extends Model
         'dia_chi_thuong_tru', 'dia_chi_tam_tru', 'so_dien_thoai', 'email',
         'cccd', 'ho_ten_cha', 'nghe_nghiep_cha', 'so_dien_thoai_cha',
         'ho_ten_me', 'nghe_nghiep_me', 'so_dien_thoai_me', 'email_phu_huynh',
-        'trang_thai', 'lop_hoc_id', 'ma_hoc_sinh', 'anh_the',
+        'trang_thai', 'lop_hoc_id', 'ma_hoc_sinh', 'ma_tra_cuu', 'anh_the',
     ];
 
     protected $casts = [
@@ -29,6 +29,9 @@ class HocSinh extends Model
         static::creating(function ($hocSinh) {
             if (empty($hocSinh->ma_hoc_sinh)) {
                 $hocSinh->ma_hoc_sinh = self::generateMaHocSinh();
+            }
+            if (empty($hocSinh->ma_tra_cuu)) {
+                $hocSinh->ma_tra_cuu = self::taoMaTraCuu();
             }
         });
     }
@@ -56,6 +59,20 @@ class HocSinh extends Model
             $exists = DB::table('hoc_sinh')->where('ma_hoc_sinh', $ma)->exists();
             if ($exists) $soThuTu++;
         } while ($exists);
+
+        return $ma;
+    }
+
+    // Mã tra cứu 8 ký tự, bỏ các ký tự dễ nhầm (0/O, 1/I/L) để phụ huynh dễ nhập
+    public static function taoMaTraCuu(): string
+    {
+        $kyTu = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        do {
+            $ma = '';
+            for ($i = 0; $i < 8; $i++) {
+                $ma .= $kyTu[random_int(0, strlen($kyTu) - 1)];
+            }
+        } while (DB::table('hoc_sinh')->where('ma_tra_cuu', $ma)->exists());
 
         return $ma;
     }

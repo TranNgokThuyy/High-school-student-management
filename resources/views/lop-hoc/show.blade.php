@@ -15,6 +15,11 @@
         </nav>
     </div>
     <div class="d-flex gap-2">
+        @if(auth()->user()->hasRole('quan-tri-vien') || $lopHoc->giao_vien_chu_nhiem_id == auth()->id())
+        <a href="{{ route('ma-tra-cuu.phieu-lop', $lopHoc) }}" target="_blank" class="btn btn-outline-success">
+            <i class="bi bi-key me-2"></i>In phiếu mã tra cứu
+        </a>
+        @endif
         @can('sua-lop-hoc')
         <a href="{{ route('lop-hoc.edit', $lopHoc) }}" class="btn btn-warning">
             <i class="bi bi-pencil me-2"></i>Chỉnh sửa
