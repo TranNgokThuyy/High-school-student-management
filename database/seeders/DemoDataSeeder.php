@@ -102,6 +102,8 @@ class DemoDataSeeder extends Seeder
         foreach (['Mai Anh Tuấn' => 'Nam', 'Trịnh Bảo Ngọc' => 'Nữ', 'Phan Gia Khang' => 'Nam'] as $ten => $gt) {
             $hs = HocSinh::firstOrCreate(['ho_ten' => $ten, 'lop_hoc_id' => $lop11->id], [
                 'ngay_sinh' => (substr($namHoc, 0, 4) - 16) . '-05-20', 'gioi_tinh' => $gt,
+                'email_phu_huynh' => 'phuhuynh.' . \Illuminate\Support\Str::slug($ten, '') . '@example.com',
+                'so_dien_thoai_me' => '09' . str_pad((string) mt_rand(0, 99999999), 8, '0', STR_PAD_LEFT),
             ]);
             for ($n = 1; $n <= 5; $n++) {
                 $ngay = today()->subWeekdays($n);

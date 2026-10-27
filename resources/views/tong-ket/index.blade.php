@@ -24,6 +24,18 @@
             <i class="bi bi-arrow-up-circle me-2"></i>Xét lên lớp
         </a>
         @endcan
+        @if($lop)
+        @can('gui-tin-phu-huynh')
+        <form method="POST" action="{{ route('tong-ket.gui-ket-qua') }}" class="d-flex align-items-center gap-2"
+              onsubmit="return confirm('Gửi kết quả {{ $hocKy === 'Ca năm' ? 'cả năm' : 'học kỳ ' . $hocKy }} tới phụ huynh lớp {{ $lop->ten_lop }}?')">
+            @csrf
+            <input type="hidden" name="lop_hoc_id" value="{{ $lop->id }}">
+            <input type="hidden" name="hoc_ky" value="{{ $hocKy }}">
+            <input type="hidden" name="kenh[]" value="email">
+            <button class="btn btn-outline-primary"><i class="bi bi-send me-2"></i>Gửi kết quả cho phụ huynh</button>
+        </form>
+        @endcan
+        @endif
         <button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer me-2"></i>In</button>
     </div>
 </div>

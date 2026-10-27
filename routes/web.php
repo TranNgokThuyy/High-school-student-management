@@ -18,6 +18,7 @@ use App\Http\Controllers\MienGiamController;
 use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\PhieuDiemController;
 use App\Http\Controllers\TraCuuController;
+use App\Http\Controllers\TinNhanPhuHuynhController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -131,6 +132,7 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     // ===== TỔNG KẾT & LÊN LỚP =====
     Route::prefix('tong-ket')->name('tong-ket.')->group(function () {
         Route::get('/',         [TongKetController::class, 'index'])->name('index')->middleware('permission:xem-tong-ket');
+        Route::post('/gui-ket-qua', [TongKetController::class, 'guiKetQua'])->name('gui-ket-qua')->middleware(['permission:xem-tong-ket', 'permission:gui-tin-phu-huynh']);
         Route::get('/len-lop',  [TongKetController::class, 'lenLop'])->name('len-lop')->middleware('permission:xet-len-lop');
         Route::post('/len-lop', [TongKetController::class, 'luuLenLop'])->name('luu-len-lop')->middleware('permission:xet-len-lop');
     });
@@ -147,6 +149,15 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     Route::get('/hoc-sinh/{hocSinh}/phieu-diem', [PhieuDiemController::class, 'show'])->name('hoc-sinh.phieu-diem')
         ->middleware('permission:xem-diem');
 
+    // ===== TIN NHẮN PHỤ HUYNH =====
+    Route::prefix('tin-nhan')->name('tin-nhan.')->middleware('permission:gui-tin-phu-huynh')->group(function () {
+        Route::get('/',                    [TinNhanPhuHuynhController::class, 'index'])->name('index');
+        Route::get('/soan',                [TinNhanPhuHuynhController::class, 'create'])->name('create');
+        Route::post('/',                   [TinNhanPhuHuynhController::class, 'store'])->name('store');
+        Route::get('/{tinNhan}',           [TinNhanPhuHuynhController::class, 'show'])->name('show');
+        Route::post('/{tinNhan}/gui-lai',  [TinNhanPhuHuynhController::class, 'guiLai'])->name('gui-lai');
+    });
+
     // ===== THÔNG BÁO =====
     Route::get('/thong-bao', [ThongBaoController::class, 'index'])->name('thong-bao.index');
     Route::post('/thong-bao', [ThongBaoController::class, 'store'])->name('thong-bao.store')->middleware('permission:dang-thong-bao');
@@ -155,6 +166,7 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     // ===== HỌC PHÍ & KHOẢN THU =====
     Route::prefix('hoc-phi')->name('hoc-phi.')->group(function () {
         Route::get('/',                           [HocPhiController::class, 'index'])->name('index')->middleware('permission:xem-hoc-phi');
+        Route::post('/nhac-no',                   [HocPhiController::class, 'nhacNo'])->name('nhac-no')->middleware(['permission:xem-hoc-phi', 'permission:gui-tin-phu-huynh']);
         Route::get('/xuat-excel',                 [HocPhiController::class, 'xuatExcel'])->name('xuat-excel')->middleware('permission:xem-hoc-phi');
         Route::get('/so-thu',                     [HocPhiController::class, 'soThu'])->name('so-thu')->middleware('permission:thu-hoc-phi');
         Route::get('/hoc-sinh/{hocSinh}',         [HocPhiController::class, 'hocSinh'])->name('hoc-sinh')->middleware('permission:xem-hoc-phi');

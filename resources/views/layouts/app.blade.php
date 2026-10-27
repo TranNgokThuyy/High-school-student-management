@@ -185,6 +185,11 @@
             <a href="{{ route('thong-bao.index') }}" class="nav-link {{ request()->routeIs('thong-bao.*') ? 'active' : '' }}">
                 <i class="bi bi-megaphone"></i> Thông báo
             </a>
+            @can('gui-tin-phu-huynh')
+            <a href="{{ route('tin-nhan.index') }}" class="nav-link {{ request()->routeIs('tin-nhan.*') ? 'active' : '' }}">
+                <i class="bi bi-chat-dots"></i> Tin nhắn phụ huynh
+            </a>
+            @endcan
             
             @can('xem-hoc-sinh')
             <span class="nav-section">Học sinh</span>

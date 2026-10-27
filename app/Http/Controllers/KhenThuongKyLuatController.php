@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\HocSinh;
 use App\Models\KhenThuongKyLuat;
 use App\Models\LopHoc;
+use App\Services\ThongBaoPhuHuynhService;
 use App\Support\NamHoc;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -76,10 +77,25 @@ class KhenThuongKyLuatController extends Controller
             'Bạn chỉ được ghi nhận khen thưởng / kỷ luật cho học sinh lớp mình chủ nhiệm!'
         );
 
-        KhenThuongKyLuat::create($validated + [
+        $banGhi = KhenThuongKyLuat::create($validated + [
             'nam_hoc'      => NamHoc::hienTai(Carbon::parse($validated['ngay_quyet_dinh'])),
             'nguoi_tao_id' => auth()->id(),
         ]);
+
+        if ($request->boolean('bao_phu_huynh') && auth()->user()->can('gui-tin-phu-huynh')) {
+            $ngay = $banGhi->ngay_quyet_dinh->format('d/m/Y');
+            app(ThongBaoPhuHuynhService::class)->gui(
+                "Thông báo {$banGhi->loai}: {$banGhi->hinh_thuc}",
+                "Ngày {$ngay}, em {ho_ten} (lớp {lop}) được ghi nhận {$banGhi->loai} - hình thức: {$banGhi->hinh_thuc}.\n"
+                    . "Nội dung: {$banGhi->noi_dung}"
+                    . ($banGhi->so_quyet_dinh ? "\nSố quyết định: {$banGhi->so_quyet_dinh}" : ''),
+                'Khen thưởng - Kỷ luật',
+                "PH em {$hocSinh->ho_ten}",
+                collect([$hocSinh]),
+                ['email'],
+                auth()->id(),
+            );
+        }
 
         return redirect()->route('khen-thuong.index')
             ->with('success', "Đã ghi nhận {$validated['loai']} cho học sinh {$hocSinh->ho_ten}!");

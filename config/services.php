@@ -22,6 +22,13 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    // Gửi SMS cho phụ huynh: driver 'log' (chỉ ghi log) hoặc 'webhook' (POST JSON {to, message})
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'webhook_url' => env('SMS_WEBHOOK_URL'),
+        'token' => env('SMS_WEBHOOK_TOKEN'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

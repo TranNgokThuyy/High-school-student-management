@@ -2,6 +2,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiemDanh;
+use App\Models\HocSinh;
+use App\Services\ThongBaoPhuHuynhService;
 use App\Models\LopHoc;
 use App\Support\NamHoc;
 use Carbon\Carbon;
@@ -81,6 +83,10 @@ class DiemDanhController extends Controller
         $hocSinhCuaLop = $lop->hocSinh()->pluck('id')->map(fn($id) => (int) $id)->all();
         $ngay = Carbon::parse($request->ngay)->toDateString();
 
+        // Học sinh đã bị đánh vắng không phép trước đó trong ngày (không báo lại khi lưu lần nữa)
+        $daVangKhongPhep = DiemDanh::where('lop_hoc_id', $lop->id)->where('ngay', $ngay)
+            ->where('trang_thai', 'Vắng không phép')->pluck('hoc_sinh_id')->map(fn ($id) => (int) $id)->all();
+
         DB::transaction(function () use ($request, $lop, $hocSinhCuaLop, $ngay) {
             foreach ($request->diem_danh as $hocSinhId => $data) {
                 if (!in_array((int) $hocSinhId, $hocSinhCuaLop, true)) {
@@ -99,8 +105,33 @@ class DiemDanhController extends Controller
             }
         });
 
+        $thongBao = "Đã lưu điểm danh lớp {$lop->ten_lop} ngày " . Carbon::parse($ngay)->format('d/m/Y') . '!';
+
+        if ($request->boolean('bao_phu_huynh') && auth()->user()->can('gui-tin-phu-huynh')) {
+            $vangMoi = collect($request->diem_danh)
+                ->filter(fn ($d, $id) => $d['trang_thai'] === 'Vắng không phép'
+                    && in_array((int) $id, $hocSinhCuaLop, true)
+                    && !in_array((int) $id, $daVangKhongPhep, true))
+                ->keys();
+
+            if ($vangMoi->isNotEmpty()) {
+                $ngayHienThi = Carbon::parse($ngay)->format('d/m/Y');
+                app(ThongBaoPhuHuynhService::class)->gui(
+                    "Học sinh vắng học không phép ngày {$ngayHienThi}",
+                    "Nhà trường thông báo: em {ho_ten} (lớp {lop}) vắng học KHÔNG PHÉP ngày {$ngayHienThi}. "
+                        . 'Kính đề nghị quý phụ huynh liên hệ giáo viên chủ nhiệm để phối hợp.',
+                    'Chuyên cần',
+                    "Lớp {$lop->ten_lop} - HS vắng không phép",
+                    HocSinh::whereIn('id', $vangMoi)->get(),
+                    ['email', 'sms'],
+                    auth()->id(),
+                );
+                $thongBao .= " Đã báo phụ huynh của {$vangMoi->count()} học sinh vắng không phép.";
+            }
+        }
+
         return redirect()->route('diem-danh.index', ['lop_hoc_id' => $lop->id, 'ngay' => $ngay])
-            ->with('success', "Đã lưu điểm danh lớp {$lop->ten_lop} ngày " . Carbon::parse($ngay)->format('d/m/Y') . '!');
+            ->with('success', $thongBao);
     }
 
     public function tongHop(Request $request)

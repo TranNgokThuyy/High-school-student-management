@@ -26,6 +26,7 @@ class StudentSpreadsheetReader
         'ho_ten_bo' => 'ho_ten_cha', 'ten_cha' => 'ho_ten_cha', 'ten_bo' => 'ho_ten_cha',
         'sdt_cha' => 'so_dien_thoai_cha', 'sdt_bo' => 'so_dien_thoai_cha', 'so_dien_thoai_bo' => 'so_dien_thoai_cha',
         'ten_me' => 'ho_ten_me', 'sdt_me' => 'so_dien_thoai_me',
+        'email_cha_me' => 'email_phu_huynh', 'email_ph' => 'email_phu_huynh', 'email_bo_me' => 'email_phu_huynh',
     ];
 
     // Cột chứa dãy số cần giữ số 0 ở đầu (Excel hay tự chuyển thành số)

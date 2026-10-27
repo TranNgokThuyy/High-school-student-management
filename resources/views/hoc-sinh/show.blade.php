@@ -20,6 +20,11 @@
             <i class="bi bi-file-earmark-pdf me-2"></i>Phiếu điểm
         </a>
         @endcan
+        @can('gui-tin-phu-huynh')
+        <a href="{{ route('tin-nhan.create', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-info">
+            <i class="bi bi-chat-dots me-2"></i>Nhắn phụ huynh
+        </a>
+        @endcan
         @can('xem-hoc-phi')
         <a href="{{ route('hoc-phi.hoc-sinh', $hocSinh) }}" class="btn btn-outline-success">
             <i class="bi bi-cash-coin me-2"></i>Học phí
@@ -140,6 +145,10 @@
                                 —
                             @endif
                         </td>
+                    </tr>
+                    <tr class="border-top">
+                        <td class="text-muted ps-3">Email PH</td>
+                        <td>{{ $hocSinh->email_phu_huynh ?? '—' }}</td>
                     </tr>
                 </table>
             </div>

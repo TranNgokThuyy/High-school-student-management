@@ -76,8 +76,20 @@
 </div>
 
 <div class="card table-card">
-    <div class="card-header bg-white py-3">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h6 class="fw-semibold mb-0">Công nợ lớp {{ $lop->ten_lop }} — năm học {{ $lop->nam_hoc }}</h6>
+        @can('gui-tin-phu-huynh')
+        @if($congNo['tong']['so_hs_no'] > 0)
+        <form method="POST" action="{{ route('hoc-phi.nhac-no') }}" class="d-flex align-items-center gap-2"
+              onsubmit="return confirm('Gửi tin nhắc nộp tiền tới phụ huynh {{ $congNo['tong']['so_hs_no'] }} học sinh còn nợ?')">
+            @csrf
+            <input type="hidden" name="lop_hoc_id" value="{{ $lop->id }}">
+            <div class="form-check form-check-inline mb-0 small"><input class="form-check-input" type="checkbox" name="kenh[]" value="email" id="nnEmail" checked><label class="form-check-label" for="nnEmail">Email</label></div>
+            <div class="form-check form-check-inline mb-0 small"><input class="form-check-input" type="checkbox" name="kenh[]" value="sms" id="nnSms"><label class="form-check-label" for="nnSms">SMS</label></div>
+            <button class="btn btn-sm btn-warning"><i class="bi bi-bell me-1"></i>Nhắc phụ huynh nộp tiền</button>
+        </form>
+        @endif
+        @endcan
     </div>
     <div class="table-responsive">
         <table class="table table-hover table-sm mb-0 align-middle small">

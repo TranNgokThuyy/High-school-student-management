@@ -28,6 +28,17 @@ Tên trường in trên phiếu thu / phiếu điểm: biến `TEN_TRUONG` trong
 
 Chạy test: `php artisan test`
 
+### Gửi email / SMS cho phụ huynh
+
+Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan queue:work` (lệnh `composer dev` đã chạy sẵn).
+
+- **Email**: cấu hình SMTP trong `.env` (`MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`).
+  Mặc định `MAIL_MAILER=log` chỉ ghi email vào `storage/logs/laravel.log`.
+- **SMS**: `SMS_DRIVER=log` (mặc định, chỉ ghi log) hoặc `SMS_DRIVER=webhook` để gửi
+  `POST {"to": "<số điện thoại>", "message": "<nội dung>"}` kèm `Authorization: Bearer <SMS_WEBHOOK_TOKEN>`
+  tới `SMS_WEBHOOK_URL` — nối tới nhà cung cấp SMS brandname / Zalo ZNS mà trường đăng ký.
+- Email phụ huynh nhập ở hồ sơ học sinh hoặc cột `email_phu_huynh` khi nhập Excel; SMS gửi tới số của mẹ, nếu trống thì của cha.
+
 ## Chức năng
 
 - **Học sinh**: hồ sơ, ảnh thẻ, xem điểm, hạnh kiểm, khen thưởng - kỷ luật, in phiếu điểm cá nhân (PDF).
@@ -47,6 +58,10 @@ Chạy test: `php artisan test`
 - **Học phí & khoản thu**: danh mục khoản thu (học phí, BHYT, quỹ...) theo năm học/khối, miễn giảm theo đối tượng
   chính sách, công nợ theo lớp (xuất Excel), lập phiếu thu và in (số tiền bằng chữ), hủy phiếu có lý do, sổ thu.
 - **Thông báo nội bộ**: đăng theo vai trò nhận, ghim, hạn hiển thị; hiện trên Dashboard.
+- **Tin nhắn phụ huynh** (`/tin-nhan`): soạn tin theo toàn trường / khối / lớp / từng học sinh, chèn `{ho_ten}`, `{lop}`...;
+  gửi qua trang tra cứu (luôn có), email và SMS; theo dõi trạng thái từng người nhận, đã xem, gửi lại tin lỗi.
+  Tự động: báo vắng không phép khi điểm danh, nhắc nộp học phí (kèm số tiền từng khoản), gửi kết quả học kỳ / cả năm,
+  báo khen thưởng - kỷ luật.
 - **Tra cứu cho phụ huynh** (`/tra-cuu`, không cần đăng nhập): mã học sinh + ngày sinh → điểm, kết quả học tập/rèn luyện,
   vắng 30 ngày gần đây, học phí còn nợ. Không hiển thị CCCD/địa chỉ/SĐT; giới hạn 10 lượt/phút.
 - **Báo cáo**: bảng điểm lớp, xuất PDF / Excel.
@@ -64,5 +79,6 @@ Chạy test: `php artisan test`
 | Xem công nợ học phí | ✔ | lớp chủ nhiệm | | ✔ |
 | Thu tiền, khoản thu, miễn giảm, sổ thu | ✔ | | | ✔ |
 | Hủy phiếu thu | ✔ | | | |
+| Gửi tin nhắn phụ huynh | ✔ toàn trường | lớp chủ nhiệm | | ✔ toàn trường |
 
 Danh sách quyền và vai trò nằm ở `app/Support/PhanQuyen.php`; migration `dong_bo_phan_quyen` tự bổ sung quyền mới cho CSDL đang chạy.

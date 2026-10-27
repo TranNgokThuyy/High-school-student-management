@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\DiemDanh;
 use App\Models\HocSinh;
 use App\Models\KhenThuongKyLuat;
+use App\Models\TinNhanNguoiNhan;
 use App\Services\HocPhiService;
 use App\Services\TongKetService;
 use App\Support\NamHoc;
@@ -54,6 +55,14 @@ class TraCuuController extends Controller
             ->orderByDesc('ngay_quyet_dinh')
             ->get();
 
-        return view('tra-cuu.ket-qua', compact('hocSinh', 'ketQua', 'congNo', 'vangGanDay', 'khenThuong', 'namHoc'));
+        $tinNhan = TinNhanNguoiNhan::with('tinNhan')
+            ->where('hoc_sinh_id', $hocSinh->id)
+            ->orderByDesc('id')
+            ->take(20)
+            ->get();
+        // Đánh dấu đã xem để nhà trường biết phụ huynh đã đọc
+        TinNhanNguoiNhan::whereIn('id', $tinNhan->whereNull('da_xem_luc')->pluck('id'))->update(['da_xem_luc' => now()]);
+
+        return view('tra-cuu.ket-qua', compact('hocSinh', 'ketQua', 'congNo', 'vangGanDay', 'khenThuong', 'namHoc', 'tinNhan'));
     }
 }

@@ -15,7 +15,7 @@ class HocSinh extends Model
         'ho_ten', 'ngay_sinh', 'gioi_tinh', 'dan_toc', 'ton_giao',
         'dia_chi_thuong_tru', 'dia_chi_tam_tru', 'so_dien_thoai', 'email',
         'cccd', 'ho_ten_cha', 'nghe_nghiep_cha', 'so_dien_thoai_cha',
-        'ho_ten_me', 'nghe_nghiep_me', 'so_dien_thoai_me',
+        'ho_ten_me', 'nghe_nghiep_me', 'so_dien_thoai_me', 'email_phu_huynh',
         'trang_thai', 'lop_hoc_id', 'ma_hoc_sinh', 'anh_the',
     ];
 
@@ -96,5 +96,16 @@ class HocSinh extends Model
     public function khenThuongKyLuat()
     {
         return $this->hasMany(KhenThuongKyLuat::class, 'hoc_sinh_id');
+    }
+
+    public function tinNhan()
+    {
+        return $this->hasMany(TinNhanNguoiNhan::class, 'hoc_sinh_id');
+    }
+
+    // Số điện thoại phụ huynh dùng để nhắn tin: ưu tiên mẹ, sau đó cha
+    public function getSoDienThoaiPhuHuynhAttribute(): ?string
+    {
+        return $this->so_dien_thoai_me ?: $this->so_dien_thoai_cha ?: null;
     }
 }

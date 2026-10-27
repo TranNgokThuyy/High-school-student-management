@@ -8,6 +8,7 @@ use App\Models\LopHoc;
 use App\Models\MienGiam;
 use App\Models\PhieuThu;
 use App\Services\HocPhiService;
+use App\Services\ThongBaoPhuHuynhService;
 use App\Support\NamHoc;
 use App\Support\Tien;
 use Carbon\Carbon;
@@ -71,6 +72,47 @@ class HocPhiController extends Controller
         $congNo = $this->hocPhi->congNoLop($lop, $request->integer('khoan_thu_id') ?: null);
 
         return Excel::download(new CongNoExport($lop, $congNo), "cong-no-{$lop->ten_lop}-{$lop->nam_hoc}.xlsx");
+    }
+
+    // Gửi tin nhắc nộp tiền cho phụ huynh các học sinh còn nợ trong lớp
+    public function nhacNo(Request $request, ThongBaoPhuHuynhService $thongBao)
+    {
+        $request->validate([
+            'lop_hoc_id' => 'required|exists:lop_hoc,id',
+            'kenh'       => 'nullable|array',
+            'kenh.*'     => 'in:email,sms',
+        ]);
+
+        $lop = LopHoc::findOrFail($request->lop_hoc_id);
+        $this->kiemTraQuyenLop($lop);
+
+        $conNo = $this->hocPhi->congNoLop($lop)['hoc_sinh']->where('con_no', '>', 0)->keyBy(fn ($r) => $r['hoc_sinh']->id);
+        if ($conNo->isEmpty()) {
+            return back()->with('error', "Lớp {$lop->ten_lop} không có học sinh còn nợ.");
+        }
+
+        $tinNhan = $thongBao->gui(
+            'Nhắc nộp học phí và các khoản thu',
+            'Danh sách khoản còn phải nộp của từng học sinh.',
+            'Học phí',
+            "Lớp {$lop->ten_lop} - HS còn nợ",
+            $conNo->pluck('hoc_sinh'),
+            $request->input('kenh', []),
+            auth()->id(),
+            function (HocSinh $hs) use ($conNo) {
+                $r = $conNo[$hs->id];
+                $dong = $r['chi_tiet']->where('con_no', '>', 0)->map(fn ($c) => '- ' . $c['khoan_thu']->ten . ': '
+                    . Tien::dinhDang($c['con_no'])
+                    . ($c['khoan_thu']->han_nop ? ' (hạn ' . $c['khoan_thu']->han_nop->format('d/m/Y') . ')' : ''));
+
+                return "Em {$hs->ho_ten} còn các khoản chưa nộp:\n" . $dong->implode("\n")
+                    . "\nTổng cộng: " . Tien::dinhDang($r['con_no'])
+                    . ".\nKính mong quý phụ huynh hoàn thành đúng hạn. Xin cảm ơn!";
+            },
+        );
+
+        return redirect()->route('tin-nhan.show', $tinNhan)
+            ->with('success', "Đã gửi nhắc nộp tiền tới phụ huynh của {$conNo->count()} học sinh.");
     }
 
     public function hocSinh(HocSinh $hocSinh)

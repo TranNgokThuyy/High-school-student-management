@@ -53,6 +53,14 @@
                 <label class="form-label fw-semibold">Số quyết định</label>
                 <input type="text" name="so_quyet_dinh" class="form-control" value="{{ old('so_quyet_dinh') }}" maxlength="50">
             </div>
+            @can('gui-tin-phu-huynh')
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="bao_phu_huynh" value="1" id="baoPhuHuynh" {{ old('bao_phu_huynh', true) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="baoPhuHuynh">Gửi thông báo cho phụ huynh (trang tra cứu + email)</label>
+                </div>
+            </div>
+            @endcan
         </div>
         <div class="card-footer bg-white text-end">
             <button class="btn btn-primary"><i class="bi bi-save me-2"></i>Lưu</button>
