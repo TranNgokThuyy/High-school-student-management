@@ -23,6 +23,10 @@ Tài khoản mặc định:
 | Giáo viên chủ nhiệm | hoa.gvcn@school.com | Gvcn@123456 |
 | Giáo viên bộ môn (dữ liệu mẫu) | nam.gvbm@school.com | Gvbm@123456 |
 | Kế toán (dữ liệu mẫu) | ketoan@school.com | Ketoan@123456 |
+| Phụ huynh (dữ liệu mẫu, 2 con lớp 11A1) | phuhuynh@school.com | Phuhuynh@123 |
+
+Hai tài khoản đầu có mật khẩu công khai nên phải **đổi mật khẩu ở lần đăng nhập đầu**; tài khoản quản trị viên còn phải
+**bật xác thực 2 bước** (Google/Microsoft Authenticator). Chạy thử nội bộ không cần 2FA thì đặt `BAT_BUOC_2FA_QUAN_TRI=false` trong `.env`.
 
 Tên trường in trên phiếu thu / phiếu điểm: biến `TEN_TRUONG` trong `.env`.
 
@@ -46,7 +50,11 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
   tới `SMS_WEBHOOK_URL` — nối tới nhà cung cấp SMS brandname / Zalo ZNS mà trường đăng ký.
 - **Zalo ZNS**: điền `ZALO_ZNS_ACCESS_TOKEN` (access token của Zalo Official Account) và `ZALO_ZNS_TEMPLATE_ID`
   (mẫu tin đã được Zalo duyệt, khai báo các tham số `ho_ten`, `lop`, `tieu_de`, `noi_dung`). Chưa cấu hình thì kênh Zalo
-  tự ẩn. Lưu ý: access token của Zalo OA hết hạn định kỳ, cần làm mới token (thủ công hoặc qua dịch vụ trung gian).
+  tự ẩn.
+- **Tự làm mới token Zalo OA**: access token chỉ sống khoảng 25 giờ. Khai báo `ZALO_APP_ID`, `ZALO_APP_SECRET` (ứng dụng trên
+  developers.zalo.me) rồi nhập access token + refresh token một lần ở trang **Kết nối Zalo OA** (hoặc `ZALO_OA_REFRESH_TOKEN`).
+  Lệnh `php artisan zalo:lam-moi-token` chạy mỗi giờ (cần cron `schedule:run`) và làm mới khi token còn dưới 3 giờ;
+  token lưu mã hóa trong CSDL. Ngừng làm mới quá 3 tháng thì refresh token hết hạn, phải nhập lại.
 - Email phụ huynh nhập ở hồ sơ học sinh hoặc cột `email_phu_huynh` khi nhập Excel; SMS gửi tới số của mẹ, nếu trống thì của cha.
 
 ## Chức năng
@@ -76,7 +84,20 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
   báo khen thưởng - kỷ luật.
 - **Tra cứu cho phụ huynh** (`/tra-cuu`, không cần đăng nhập): mã học sinh + **mã tra cứu riêng** (8 ký tự ngẫu nhiên, in phiếu theo lớp, cấp lại được) → điểm, kết quả học tập/rèn luyện,
   vắng 30 ngày gần đây, học phí còn nợ. Không hiển thị CCCD/địa chỉ/SĐT; giới hạn 10 lượt/phút.
-- **Báo cáo**: bảng điểm lớp, xuất PDF / Excel.
+- **Báo cáo**: bảng điểm lớp, xuất PDF / Excel. **Thống kê có biểu đồ** (học lực, rèn luyện, chuyên cần theo khối/lớp, học phí).
+  **Xuất dữ liệu nộp Sở** (Excel nhiều trang: hồ sơ, kết quả cuối năm, điểm các môn, biến động, thống kê).
+- **Nhập điểm từ Excel**: tải mẫu có sẵn danh sách lớp và điểm hiện có, ô trống giữ nguyên điểm cũ, báo lỗi từng dòng.
+- **Môn lựa chọn GDPT 2018**: môn bắt buộc / lựa chọn / chuyên đề, đăng ký môn cho từng học sinh theo lớp;
+  nhập điểm, sổ điểm, tổng kết chỉ tính môn học sinh học.
+- **Rèn luyện theo TT22** (Tốt / Khá / Đạt / Chưa đạt), **kiểm tra lại & rèn luyện hè** (Điều 12, 13) rồi xét lên lớp sau hè.
+- **Chuyển trường / thôi học / chuyển đến**: ghi biến động có số quyết định, cập nhật trạng thái và sĩ số.
+- **Kỳ thi**: lịch thi theo môn (chống trùng giờ), xếp phòng tự động theo tên, số báo danh liên tục, in danh sách phòng thi.
+- **Giáo viên & giờ dạy**: hồ sơ (trình độ, chuyên môn, tổ, chức vụ), định mức tiết, giảm trừ chủ nhiệm / kiêm nhiệm,
+  bảng thừa / thiếu giờ theo học kỳ tính từ phân công.
+- **Tài khoản phụ huynh** (`/phu-huynh`): phụ huynh tự đăng ký bằng mã học sinh + mã tra cứu, theo dõi nhiều con trong một
+  tài khoản (điểm, rèn luyện, vắng, học phí còn nợ, tin nhắn); GVCN gỡ được liên kết ở hồ sơ học sinh.
+- **Dùng trên điện thoại**: menu trượt, bảng cuộn ngang giữ cột họ tên, cài lên màn hình chính như ứng dụng.
+- **Bảo mật**: xác thực 2 bước (mã QR, mã khôi phục), bắt đổi mật khẩu được cấp, chính sách mật khẩu (8 ký tự, hoa, thường, số).
 - **Tài khoản**: chỉ quản trị viên quản lý; tài khoản tự đăng ký phải chờ kích hoạt.
 
 ## Phân quyền
@@ -92,5 +113,9 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
 | Thu tiền, khoản thu, miễn giảm, sổ thu | ✔ | | | ✔ |
 | Hủy phiếu thu | ✔ | | | |
 | Gửi tin nhắn phụ huynh | ✔ toàn trường | lớp chủ nhiệm | | ✔ toàn trường |
+| Kỳ thi, biến động học sinh, giáo viên & giờ dạy, xuất dữ liệu Sở, Zalo OA | ✔ | | | |
+| Đăng ký môn lựa chọn | ✔ | lớp chủ nhiệm | | |
+
+Tài khoản **phụ huynh** chỉ vào được cổng `/phu-huynh` (con của mình), không vào được trang cán bộ hay API.
 
 Danh sách quyền và vai trò nằm ở `app/Support/PhanQuyen.php`; migration `dong_bo_phan_quyen` tự bổ sung quyền mới cho CSDL đang chạy.
