@@ -33,6 +33,11 @@
             <i class="bi bi-cash-coin me-2"></i>Học phí
         </a>
         @endcan
+        @can('quan-ly-bien-dong')
+        <a href="{{ route('bien-dong.create', $hocSinh) }}" class="btn btn-outline-warning" title="Chuyển trường / thôi học / học lại">
+            <i class="bi bi-arrow-left-right"></i>
+        </a>
+        @endcan
         @can('xem-nhat-ky')
         <a href="{{ route('nhat-ky.index', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-secondary" title="Lịch sử thay đổi điểm, hồ sơ, học phí">
             <i class="bi bi-clock-history"></i>

@@ -131,4 +131,9 @@ class HocSinh extends Model
     {
         return "Học sinh {$this->ho_ten} ({$this->ma_hoc_sinh})";
     }
+
+    public function bienDong()
+    {
+        return $this->hasMany(BienDongHocSinh::class, 'hoc_sinh_id');
+    }
 }

@@ -25,6 +25,7 @@ use App\Http\Controllers\SaoLuuController;
 use App\Http\Controllers\SoDiemController;
 use App\Http\Controllers\DangKyMonController;
 use App\Http\Controllers\NhapDiemExcelController;
+use App\Http\Controllers\BienDongController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -173,6 +174,13 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
             Route::get('/{tenTep}/tai-ve',  [SaoLuuController::class, 'download'])->name('download');
             Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
         });
+    });
+
+    // ===== BIẾN ĐỘNG HỌC SINH: CHUYỂN TRƯỜNG / THÔI HỌC =====
+    Route::middleware('permission:quan-ly-bien-dong')->group(function () {
+        Route::get('/bien-dong', [BienDongController::class, 'index'])->name('bien-dong.index');
+        Route::get('/hoc-sinh/{hocSinh}/bien-dong', [BienDongController::class, 'create'])->name('bien-dong.create');
+        Route::post('/hoc-sinh/{hocSinh}/bien-dong', [BienDongController::class, 'store'])->name('bien-dong.store');
     });
 
     // ===== ĐĂNG KÝ MÔN LỰA CHỌN (GDPT 2018) =====

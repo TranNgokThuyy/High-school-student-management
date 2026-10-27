@@ -25,6 +25,7 @@ class PhanQuyen
         'dang-thong-bao',
         'gui-tin-phu-huynh',
         'xem-nhat-ky', 'quan-ly-sao-luu',
+        'quan-ly-bien-dong',
     ];
 
     public const VAI_TRO = [

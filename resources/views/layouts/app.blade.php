@@ -198,6 +198,11 @@
             </a>
             @endcan
             
+            @can('quan-ly-bien-dong')
+            <a href="{{ route('bien-dong.index') }}" class="nav-link {{ request()->routeIs('bien-dong.*') ? 'active' : '' }}">
+                <i class="bi bi-arrow-left-right"></i> Chuyển trường / thôi học
+            </a>
+            @endcan
             @can('xem-lop-hoc')
             <a href="{{ route('lop-hoc.index') }}" class="nav-link {{ request()->routeIs('lop-hoc.*') ? 'active' : '' }}">
                 <i class="bi bi-building"></i> Quản lý lớp học

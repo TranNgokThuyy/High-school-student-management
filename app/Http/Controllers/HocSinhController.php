@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\BienDongHocSinh;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
 use App\Services\StudentSpreadsheetReader;
@@ -288,8 +289,30 @@ class HocSinhController extends Controller implements HasMiddleware
             ->store('hoc-sinh/anh-the', 'public');
     }
 
+    $chuyenDen = $request->validate([
+        'chuyen_den'           => 'nullable|boolean',
+        'truong_cu'            => 'required_if:chuyen_den,1|nullable|string|max:200',
+        'so_quyet_dinh_den'    => 'nullable|string|max:50',
+        'ngay_chuyen_den'      => 'nullable|date|before_or_equal:today',
+    ], ['truong_cu.required_if' => 'Vui lòng nhập trường học sinh chuyển đi']);
+
     // KHÔNG cần set ma_hoc_sinh — Model tự tạo trong booted()
     $hocSinh = HocSinh::create($validated);
+
+    // Học sinh chuyển đến từ trường khác: ghi nhận biến động có quyết định
+    if ($request->boolean('chuyen_den')) {
+        $ngay = Carbon::parse($chuyenDen['ngay_chuyen_den'] ?? today());
+        BienDongHocSinh::create([
+            'hoc_sinh_id'   => $hocSinh->id,
+            'loai'          => 'Chuyển đến',
+            'ngay'          => $ngay,
+            'so_quyet_dinh' => $chuyenDen['so_quyet_dinh_den'] ?? null,
+            'truong'        => $chuyenDen['truong_cu'],
+            'lop_hoc_id'    => $hocSinh->lop_hoc_id,
+            'nam_hoc'       => NamHoc::hienTai($ngay),
+            'nguoi_tao_id'  => auth()->id(),
+        ]);
+    }
 
     // Cập nhật sĩ số lớp
     if ($hocSinh->lop_hoc_id) {
@@ -351,10 +374,9 @@ class HocSinhController extends Controller implements HasMiddleware
         $hocSinh->update($validated);
 
         // Cập nhật sĩ số
-        if ($lopCu != ($validated['lop_hoc_id'] ?? null)) {
-            if ($lopCu) $this->capNhatSiSo($lopCu);
-            if ($validated['lop_hoc_id'] ?? null) $this->capNhatSiSo($validated['lop_hoc_id']);
-        }
+        // Đổi lớp hoặc đổi trạng thái đều làm thay đổi sĩ số
+        if ($lopCu) $this->capNhatSiSo($lopCu);
+        if (($validated['lop_hoc_id'] ?? null) && $validated['lop_hoc_id'] != $lopCu) $this->capNhatSiSo($validated['lop_hoc_id']);
 
         return redirect()->route('hoc-sinh.show', $hocSinh)
             ->with('success', 'Cập nhật thông tin học sinh thành công!');
@@ -377,7 +399,7 @@ class HocSinhController extends Controller implements HasMiddleware
     {
         $lop = LopHoc::find($lopId);
         if ($lop) {
-            $lop->update(['si_so' => $lop->hocSinh()->count()]);
+            $lop->capNhatSiSo();
         }
     }
 }
