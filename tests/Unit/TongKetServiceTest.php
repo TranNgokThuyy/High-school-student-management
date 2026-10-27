@@ -24,6 +24,41 @@ class TongKetServiceTest extends TestCase
         $this->assertNull(TongKetService::xepLoaiHocTap([]));
     }
 
+    public function test_muc_dat_can_it_nhat_6_mon_tu_5_diem(): void
+    {
+        // TT22: Đạt khi ít nhất 6 môn điểm số >= 5.0 và không môn nào < 3.5 (cho phép nhiều môn dưới 5)
+        $this->assertSame('Đạt', TongKetService::xepLoaiHocTap([6, 6, 6, 6, 6, 6, 4, 4, 4]));
+        $this->assertSame('Chưa đạt', TongKetService::xepLoaiHocTap([6, 6, 6, 6, 6, 4, 4, 4]));
+    }
+
+    public function test_xep_loai_co_mon_nhan_xet(): void
+    {
+        $diemTot = [8, 8, 8, 8, 8, 8, 7];
+        $this->assertSame('Tốt', TongKetService::xepLoaiHocTap([...$diemTot, 'Đạt', 'Đạt']));
+        // Một môn nhận xét Chưa đạt: không được Tốt / Khá, vẫn có thể Đạt
+        $this->assertSame('Đạt', TongKetService::xepLoaiHocTap([...$diemTot, 'Đạt', 'Chưa đạt']));
+        // Hai môn nhận xét Chưa đạt: Chưa đạt
+        $this->assertSame('Chưa đạt', TongKetService::xepLoaiHocTap([...$diemTot, 'Chưa đạt', 'Chưa đạt']));
+        // Môn nhận xét không tính vào số môn đạt 9.0 của danh hiệu
+        $this->assertSame('Học sinh Giỏi', TongKetService::danhHieu('Tốt', 'Tốt', [9, 9, 9, 9, 9, 8, 'Đạt', 'Đạt']));
+    }
+
+    public function test_ket_qua_mon_nhan_xet(): void
+    {
+        $diem = new \App\Models\DiemSo();
+        $diem->nhan_xet = ['tx1' => 'Đ', 'tx2' => 'CĐ', 'gk' => 'Đ', 'ck' => 'Đ'];
+        $this->assertSame('Đạt', $diem->tinhKetQuaNhanXet());          // 3/4 Đạt, cuối kỳ Đạt
+
+        $diem->nhan_xet = ['tx1' => 'Đ', 'tx2' => 'Đ', 'gk' => 'Đ', 'ck' => 'CĐ'];
+        $this->assertSame('Chưa đạt', $diem->tinhKetQuaNhanXet());     // cuối kỳ Chưa đạt
+
+        $diem->nhan_xet = ['tx1' => 'CĐ', 'tx2' => 'CĐ', 'gk' => 'Đ', 'ck' => 'Đ'];
+        $this->assertSame('Chưa đạt', $diem->tinhKetQuaNhanXet());     // chỉ 2/4 Đạt
+
+        $diem->nhan_xet = ['tx1' => 'Đ'];
+        $this->assertNull($diem->tinhKetQuaNhanXet());                 // chưa có cuối kỳ
+    }
+
     public function test_danh_hieu(): void
     {
         $xuatSac = [9, 9, 9, 9, 9, 9, 8];

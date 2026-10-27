@@ -65,11 +65,18 @@ class DemoDataSeeder extends Seeder
                         'hoc_sinh_id' => $hs->id, 'mon_hoc_id' => $mon->id,
                         'lop_hoc_id' => $lopCu->id, 'hoc_ky' => $hk, 'nam_hoc' => $namTruoc,
                     ]);
-                    $diem->fill([
-                        'diem_tx1' => $d(), 'diem_tx2' => $d(), 'diem_tx3' => $d(),
-                        'diem_gk' => $d(), 'diem_ck' => $d(), 'giao_vien_id' => $gvcn->id,
-                    ]);
-                    $diem->diem_trung_binh = $diem->tinhDiemTrungBinh();
+                    $diem->giao_vien_id = $gvcn->id;
+                    if ($mon->laMonNhanXet()) {
+                        $nx = fn () => $nen >= 5 || mt_rand(0, 1) ? 'Đ' : 'CĐ';
+                        $diem->nhan_xet = ['tx1' => $nx(), 'tx2' => $nx(), 'gk' => $nx(), 'ck' => $nx()];
+                        $diem->ket_qua_nhan_xet = $diem->tinhKetQuaNhanXet();
+                    } else {
+                        $diem->fill([
+                            'diem_tx1' => $d(), 'diem_tx2' => $d(), 'diem_tx3' => $d(),
+                            'diem_gk' => $d(), 'diem_ck' => $d(),
+                        ]);
+                        $diem->diem_trung_binh = $diem->tinhDiemTrungBinh();
+                    }
                     $diem->save();
                 }
 

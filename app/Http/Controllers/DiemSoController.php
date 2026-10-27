@@ -91,7 +91,11 @@ class DiemSoController extends Controller
             'diem.*.diem_tx4' => 'nullable|numeric|min:0|max:10',
             'diem.*.diem_gk' => 'nullable|numeric|min:0|max:10',
             'diem.*.diem_ck' => 'nullable|numeric|min:0|max:10',
+            'diem.*.nhan_xet' => 'nullable|array',
+            'diem.*.nhan_xet.*' => 'nullable|in:Đ,CĐ',
         ]);
+
+        $mon = MonHoc::findOrFail($request->mon_hoc_id);
 
         $this->kiemTraPhanCong($request);
 
@@ -99,7 +103,7 @@ class DiemSoController extends Controller
         $hocSinhCuaLop = HocSinh::where('lop_hoc_id', $request->lop_hoc_id)->pluck('id')->all();
         $diemHopLe = array_intersect_key($request->diem, array_flip($hocSinhCuaLop));
 
-        DB::transaction(function () use ($request, $diemHopLe) {
+        DB::transaction(function () use ($request, $diemHopLe, $mon) {
             foreach ($diemHopLe as $hocSinhId => $diemData) {
                 $record = DiemSo::firstOrNew([
                     'hoc_sinh_id' => $hocSinhId,
@@ -109,20 +113,25 @@ class DiemSoController extends Controller
                     'nam_hoc' => $request->nam_hoc,
                 ]);
 
-                $record->fill([
-                    'diem_tx1' => $diemData['diem_tx1'] ?? null,
-                    'diem_tx2' => $diemData['diem_tx2'] ?? null,
-                    'diem_tx3' => $diemData['diem_tx3'] ?? null,
-                    'diem_tx4' => $diemData['diem_tx4'] ?? null,
-                    'diem_gk' => $diemData['diem_gk'] ?? null,
-                    'diem_ck' => $diemData['diem_ck'] ?? null,
-                    'giao_vien_id' => auth()->id(),
-                ]);
+                $record->giao_vien_id = auth()->id();
 
-                $record->save();
-                
-                // Tính điểm trung bình
-                $record->diem_trung_binh = $record->tinhDiemTrungBinh();
+                if ($mon->laMonNhanXet()) {
+                    // Môn đánh giá bằng nhận xét: lưu Đ / CĐ cho từng lần đánh giá
+                    $record->nhan_xet = collect($diemData['nhan_xet'] ?? [])
+                        ->only(DiemSo::COT_NHAN_XET)->filter()->all() ?: null;
+                    $record->ket_qua_nhan_xet = $record->tinhKetQuaNhanXet();
+                } else {
+                    $record->fill([
+                        'diem_tx1' => $diemData['diem_tx1'] ?? null,
+                        'diem_tx2' => $diemData['diem_tx2'] ?? null,
+                        'diem_tx3' => $diemData['diem_tx3'] ?? null,
+                        'diem_tx4' => $diemData['diem_tx4'] ?? null,
+                        'diem_gk' => $diemData['diem_gk'] ?? null,
+                        'diem_ck' => $diemData['diem_ck'] ?? null,
+                    ]);
+                    $record->diem_trung_binh = $record->tinhDiemTrungBinh();
+                }
+
                 $record->save();
             }
         });

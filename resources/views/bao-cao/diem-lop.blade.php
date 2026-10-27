@@ -150,7 +150,7 @@
                             <td class="text-center
                                 {{ !is_null($dtb) && $dtb < 5.0 ? 'bg-danger bg-opacity-10 text-danger fw-bold' : '' }}
                                 {{ !is_null($dtb) && $dtb >= 8.0 ? 'text-success fw-semibold' : '' }}">
-                                {{ !is_null($dtb) ? number_format($dtb, 1) : '—' }}
+                                {{ !is_null($dtb) ? number_format($dtb, 1) : ($diem?->ket_qua_nhan_xet ?? '—') }}
                             </td>
                         @endforeach
                         <td class="text-center fw-bold bg-warning bg-opacity-10

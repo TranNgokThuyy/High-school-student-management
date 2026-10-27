@@ -22,7 +22,6 @@
 <body>
 @php
     $ky = $ketQua['theo_ky'];
-    $dinhDang = fn ($d) => is_null($d) ? '—' : number_format($d, 1);
 @endphp
 <table class="dau">
     <tr>
@@ -51,7 +50,7 @@
             <td class="trai">{{ $mon->ten_mon }}</td>
             @foreach(['1', '2', 'Ca năm'] as $k)
                 @php $d = $ky[$k]['diem_mon'][$mon->id] ?? null; @endphp
-                <td class="{{ !is_null($d) && $d < 5 ? 'thap' : '' }}">{{ $dinhDang($d) }}</td>
+                <td class="{{ \App\Support\Diem::thap($d) ? 'thap' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
             @endforeach
         </tr>
         @endforeach

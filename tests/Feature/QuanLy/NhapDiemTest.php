@@ -67,4 +67,32 @@ class NhapDiemTest extends QuanLyTestCase
         ])->assertSessionHas('error');
         $this->assertDatabaseCount('phan_cong_giang_day', 2);
     }
+
+    public function test_nhap_mon_nhan_xet_va_tong_ket(): void
+    {
+        $admin = $this->taoUser('quan-tri-vien');
+        $lop = $this->taoLop();
+        $hs = $this->taoHocSinh($lop);
+        $gdtc = \App\Models\MonHoc::create(['ma_mon' => 'GDTC', 'ten_mon' => 'GDTC', 'so_tiet_tuan' => 2,
+            'khoi' => 'Tất cả', 'hinh_thuc_danh_gia' => 'Nhận xét']);
+
+        foreach (['1' => 'Đ', '2' => 'CĐ'] as $hk => $cuoiKy) {
+            $this->actingAs($admin)->post('/diem-so/luu-diem', [
+                'lop_hoc_id' => $lop->id, 'mon_hoc_id' => $gdtc->id, 'hoc_ky' => $hk, 'nam_hoc' => $lop->nam_hoc,
+                'diem' => [$hs->id => ['nhan_xet' => ['tx1' => 'Đ', 'tx2' => 'Đ', 'gk' => 'Đ', 'ck' => $cuoiKy]]],
+            ])->assertRedirect();
+        }
+
+        $hk1 = \App\Models\DiemSo::where('hoc_ky', '1')->first();
+        $this->assertSame('Đạt', $hk1->ket_qua_nhan_xet);
+        $this->assertNull($hk1->diem_trung_binh);
+
+        // Cả năm lấy kết quả học kỳ II (Chưa đạt)
+        $ketQua = app(\App\Services\TongKetService::class)->tongKetLop($lop, 'Ca năm')['ket_qua']->first();
+        $this->assertSame('Chưa đạt', $ketQua['diem_mon'][$gdtc->id]);
+
+        $this->actingAs($admin)->get("/diem-so/nhap-diem?lop_hoc_id={$lop->id}&mon_hoc_id={$gdtc->id}&hoc_ky=1&nam_hoc={$lop->nam_hoc}")
+            ->assertOk()->assertSee('Môn đánh giá bằng nhận xét', false);
+        $this->actingAs($admin)->get("/tong-ket?lop_hoc_id={$lop->id}")->assertOk()->assertSee('Chưa đạt');
+    }
 }

@@ -130,7 +130,7 @@
                     </td>
                     @foreach($monHoc as $mon)
                         @php $d = $r['diem_mon'][$mon->id]; @endphp
-                        <td class="text-center {{ !is_null($d) && $d < 5 ? 'diem-thap' : '' }}">{{ is_null($d) ? '—' : number_format($d, 1) }}</td>
+                        <td class="text-center {{ \App\Support\Diem::thap($d) ? 'diem-thap' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
                     @endforeach
                     <td class="text-center fw-semibold">{{ $r['dtb_chung'] ?? '—' }}</td>
                     <td class="text-center">

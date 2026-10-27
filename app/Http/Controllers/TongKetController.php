@@ -99,7 +99,7 @@ class TongKetController extends Controller
             auth()->id(),
             function ($hs) use ($ketQua, $monHoc, $tenKy) {
                 $r = $ketQua[$hs->id];
-                $diem = $monHoc->map(fn ($m) => $m->ten_mon . ': ' . (is_null($r['diem_mon'][$m->id]) ? '—' : number_format($r['diem_mon'][$m->id], 1)))
+                $diem = $monHoc->map(fn ($m) => $m->ten_mon . ': ' . \App\Support\Diem::hienThi($r['diem_mon'][$m->id]))
                     ->implode('; ');
 
                 return "Kết quả {$tenKy} của em {$hs->ho_ten}:\n"

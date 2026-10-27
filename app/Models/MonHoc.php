@@ -8,8 +8,16 @@ class MonHoc extends Model
     protected $table = 'mon_hoc';
 
     protected $fillable = [
-        'ma_mon', 'ten_mon', 'so_tiet_tuan', 'khoi', 'is_active',
+        'ma_mon', 'ten_mon', 'so_tiet_tuan', 'khoi', 'hinh_thuc_danh_gia', 'is_active',
     ];
+
+    public const DIEM_SO = 'Điểm số';
+    public const NHAN_XET = 'Nhận xét';
+
+    public function laMonNhanXet(): bool
+    {
+        return $this->hinh_thuc_danh_gia === self::NHAN_XET;
+    }
 
     protected $casts = ['is_active' => 'boolean'];
 

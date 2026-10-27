@@ -19,21 +19,28 @@ class TongKetService
     public const SO_BUOI_NGHI_TOI_DA = 45;
 
     /**
-     * Xếp loại kết quả học tập từ danh sách ĐTB các môn (Điều 9 TT22).
+     * Xếp loại kết quả học tập (Điều 9 TT22). Mỗi phần tử là ĐTB môn (số)
+     * hoặc kết quả môn đánh giá bằng nhận xét ('Đạt' / 'Chưa đạt').
      */
-    public static function xepLoaiHocTap(array $diemCacMon): ?string
+    public static function xepLoaiHocTap(array $ketQuaCacMon): ?string
     {
-        $diem = collect($diemCacMon)->filter(fn($d) => !is_null($d))->map(fn($d) => (float) $d);
-        if ($diem->isEmpty()) {
+        $ketQua = collect($ketQuaCacMon)->filter(fn ($d) => !is_null($d));
+        $diem = $ketQua->reject(fn ($d) => is_string($d))->map(fn ($d) => (float) $d);
+        $nhanXet = $ketQua->filter(fn ($d) => is_string($d));
+        if ($ketQua->isEmpty()) {
             return null;
         }
 
-        $min = $diem->min();
+        $min = $diem->min() ?? 10;
+        $soNxChuaDat = $nhanXet->filter(fn ($d) => $d !== 'Đạt')->count();
 
         return match (true) {
-            $min >= 6.5 && $diem->filter(fn($d) => $d >= 8.0)->count() >= 6 => 'Tốt',
-            $min >= 5.0 && $diem->filter(fn($d) => $d >= 6.5)->count() >= 6 => 'Khá',
-            $min >= 3.5 && $diem->filter(fn($d) => $d < 5.0)->count() <= 1  => 'Đạt',
+            // Tốt: môn nhận xét đều Đạt; môn điểm số đều >= 6.5, ít nhất 6 môn >= 8.0
+            $soNxChuaDat === 0 && $min >= 6.5 && $diem->filter(fn ($d) => $d >= 8.0)->count() >= 6 => 'Tốt',
+            // Khá: môn nhận xét đều Đạt; môn điểm số đều >= 5.0, ít nhất 6 môn >= 6.5
+            $soNxChuaDat === 0 && $min >= 5.0 && $diem->filter(fn ($d) => $d >= 6.5)->count() >= 6 => 'Khá',
+            // Đạt: tối đa 1 môn nhận xét Chưa đạt; ít nhất 6 môn điểm số >= 5.0; không môn nào < 3.5
+            $soNxChuaDat <= 1 && $min >= 3.5 && $diem->filter(fn ($d) => $d >= 5.0)->count() >= 6 => 'Đạt',
             default => 'Chưa đạt',
         };
     }
@@ -61,7 +68,7 @@ class TongKetService
             return null;
         }
 
-        $soMonTren9 = collect($diemCacMon)->filter(fn($d) => !is_null($d) && $d >= 9.0)->count();
+        $soMonTren9 = collect($diemCacMon)->filter(fn ($d) => !is_null($d) && !is_string($d) && $d >= 9.0)->count();
 
         return $soMonTren9 >= 6 ? 'Học sinh Xuất sắc' : 'Học sinh Giỏi';
     }
@@ -138,7 +145,7 @@ class TongKetService
 
             $diemMon = [];
             foreach ($monHoc as $mon) {
-                $diemMon[$mon->id] = $this->diemTrungBinhMon($diemCuaHs->where('mon_hoc_id', $mon->id), $hocKy);
+                $diemMon[$mon->id] = $this->ketQuaMon($diemCuaHs->where('mon_hoc_id', $mon->id), $hocKy, $mon);
             }
 
             $duDiem   = !in_array(null, $diemMon, true) && count($diemMon) > 0;
@@ -152,7 +159,7 @@ class TongKetService
                 ? $hk->so_buoi_vang_co_phep + $hk->so_buoi_vang_khong_phep
                 : $vangDiemDanh['vang_co_phep'] + $vangDiemDanh['vang_khong_phep'];
 
-            $diemCoGiaTri = array_filter($diemMon, fn($d) => !is_null($d));
+            $diemCoGiaTri = array_filter($diemMon, fn ($d) => !is_null($d) && !is_string($d));
 
             return [
                 'hoc_sinh'   => $hs,
@@ -198,6 +205,16 @@ class TongKetService
         }
 
         return ['lop' => $lop, 'nam_hoc' => $namHoc, 'mon_hoc' => $monHoc->sortBy('ten_mon')->values(), 'theo_ky' => $theoKy];
+    }
+
+    // Kết quả môn: môn nhận xét lấy Đạt / Chưa đạt (cả năm = kết quả HK2), môn điểm số lấy ĐTB
+    private function ketQuaMon(Collection $diem, string $hocKy, MonHoc $mon): float|string|null
+    {
+        if ($mon->laMonNhanXet()) {
+            return $diem->firstWhere('hoc_ky', $hocKy === 'Ca năm' ? '2' : $hocKy)?->ket_qua_nhan_xet;
+        }
+
+        return $this->diemTrungBinhMon($diem, $hocKy);
     }
 
     // ĐTB môn học kỳ lấy từ bảng điểm; ĐTB môn cả năm = (ĐTB HK1 + 2 × ĐTB HK2) / 3

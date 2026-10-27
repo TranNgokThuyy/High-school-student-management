@@ -71,12 +71,59 @@ tr:hover .diem-input {
                 <div class="col-auto">
                     <div class="alert alert-warning py-1 px-3 mb-0 small">
                         <i class="bi bi-calculator me-1"></i>
-                        Công thức: <strong>ĐTB = (TX×1 + GK×2 + CK×3) / (số TX + 5)</strong>
+                        @if($mon->laMonNhanXet()) Môn đánh giá bằng <strong>nhận xét</strong> @else Công thức: <strong>ĐTB = (TX×1 + GK×2 + CK×3) / (số TX + 5)</strong> @endif
                     </div>
                 </div>
             </div>
         </div>
 
+        @if($mon->laMonNhanXet())
+        {{-- Môn đánh giá bằng nhận xét: mỗi lần đánh giá chọn Đ (Đạt) / CĐ (Chưa đạt) --}}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead>
+                    <tr class="table-light">
+                        <th style="width:45px" class="text-center">STT</th>
+                        <th style="min-width:160px">Họ và tên</th>
+                        @foreach(['tx1' => 'TX1', 'tx2' => 'TX2', 'tx3' => 'TX3', 'tx4' => 'TX4', 'gk' => 'Giữa kỳ', 'ck' => 'Cuối kỳ'] as $cot => $nhan)
+                            <th class="text-center {{ $cot === 'ck' ? 'table-danger' : ($cot === 'gk' ? 'table-warning' : '') }}" style="width:95px">{{ $nhan }}</th>
+                        @endforeach
+                        <th class="text-center table-success" style="width:100px">Kết quả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($lop->hocSinh->sortBy('ho_ten')->values() as $index => $hs)
+                        @php $d = $diemHienCo[$hs->id] ?? null; @endphp
+                        <tr>
+                            <td class="text-center text-muted">{{ $index + 1 }}</td>
+                            <td>
+                                <div class="fw-semibold">{{ $hs->ho_ten }}</div>
+                                <small class="text-muted">{{ $hs->ma_hoc_sinh }}</small>
+                            </td>
+                            @foreach(\App\Models\DiemSo::COT_NHAN_XET as $cot)
+                                @php $giaTri = old("diem.{$hs->id}.nhan_xet.{$cot}", $d?->nhan_xet[$cot] ?? ''); @endphp
+                                <td class="text-center">
+                                    <select name="diem[{{ $hs->id }}][nhan_xet][{{ $cot }}]" class="form-select form-select-sm">
+                                        <option value="">—</option>
+                                        <option value="Đ" {{ $giaTri === 'Đ' ? 'selected' : '' }}>Đ</option>
+                                        <option value="CĐ" {{ $giaTri === 'CĐ' ? 'selected' : '' }}>CĐ</option>
+                                    </select>
+                                </td>
+                            @endforeach
+                            <td class="text-center fw-bold {{ $d?->ket_qua_nhan_xet === 'Chưa đạt' ? 'text-danger' : 'text-success' }}">
+                                {{ $d?->ket_qua_nhan_xet ?? '—' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="9" class="text-center py-4 text-muted">Lớp chưa có học sinh nào</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="px-3 py-2 small text-muted border-top">
+            Môn đánh giá bằng nhận xét (TT22): <b>Đạt</b> khi cuối kỳ Đạt và ít nhất 2/3 số lần đánh giá Đạt. Kết quả cả năm là kết quả học kỳ II.
+        </div>
+        @else
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead>
@@ -214,6 +261,8 @@ tr:hover .diem-input {
                 </tbody>
             </table>
         </div>
+
+        @endif
 
         <div class="card-footer bg-white d-flex justify-content-between align-items-center">
             <small class="text-muted">

@@ -35,6 +35,7 @@ class MonHocController extends Controller
             'ten_mon'      => 'required|string|max:100',
             'so_tiet_tuan' => 'required|integer|min:1|max:10',
             'khoi'         => 'required|in:10,11,12,Tất cả',
+            'hinh_thuc_danh_gia' => 'required|in:Điểm số,Nhận xét',
             'is_active'    => 'boolean',
         ], [
             'ma_mon.required'  => 'Vui lòng nhập mã môn học',
@@ -62,6 +63,7 @@ class MonHocController extends Controller
             'ten_mon'      => 'required|string|max:100',
             'so_tiet_tuan' => 'required|integer|min:1|max:10',
             'khoi'         => 'required|in:10,11,12,Tất cả',
+            'hinh_thuc_danh_gia' => 'required|in:Điểm số,Nhận xét',
             'is_active'    => 'boolean',
         ]);
 

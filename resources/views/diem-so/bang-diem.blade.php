@@ -106,17 +106,19 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td class="fw-semibold">{{ $hs->ho_ten }}</td>
-                        <td class="text-center">{{ $d?->diem_tx1 ?? '—' }}</td>
-                        <td class="text-center">{{ $d?->diem_tx2 ?? '—' }}</td>
-                        <td class="text-center">{{ $d?->diem_tx3 ?? '—' }}</td>
-                        <td class="text-center">{{ $d?->diem_tx4 ?? '—' }}</td>
-                        <td class="text-center">{{ $d?->diem_gk ?? '—' }}</td>
-                        <td class="text-center">{{ $d?->diem_ck ?? '—' }}</td>
+                        <td class="text-center">{{ $d?->diem_tx1 ?? ($d?->nhan_xet['tx1'] ?? '—') }}</td>
+                        <td class="text-center">{{ $d?->diem_tx2 ?? ($d?->nhan_xet['tx2'] ?? '—') }}</td>
+                        <td class="text-center">{{ $d?->diem_tx3 ?? ($d?->nhan_xet['tx3'] ?? '—') }}</td>
+                        <td class="text-center">{{ $d?->diem_tx4 ?? ($d?->nhan_xet['tx4'] ?? '—') }}</td>
+                        <td class="text-center">{{ $d?->diem_gk ?? ($d?->nhan_xet['gk'] ?? '—') }}</td>
+                        <td class="text-center">{{ $d?->diem_ck ?? ($d?->nhan_xet['ck'] ?? '—') }}</td>
                         <td class="text-center">
                             @if($d?->diem_trung_binh)
                                 <strong class="{{ $d->diem_trung_binh >= 5 ? 'text-success' : 'text-danger' }}">
                                     {{ number_format($d->diem_trung_binh, 2) }}
                                 </strong>
+                            @elseif($d?->ket_qua_nhan_xet)
+                                <strong class="{{ $d->ket_qua_nhan_xet === 'Đạt' ? 'text-success' : 'text-danger' }}">{{ $d->ket_qua_nhan_xet }}</strong>
                             @else
                                 <span class="text-muted">—</span>
                             @endif

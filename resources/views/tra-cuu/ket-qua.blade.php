@@ -3,7 +3,7 @@
 
 @section('content')
 @use('App\Support\Tien')
-@php $ky = $ketQua['theo_ky'] ?? null; $dd = fn ($d) => is_null($d) ? '—' : number_format($d, 1); @endphp
+@php $ky = $ketQua['theo_ky'] ?? null; @endphp
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-1">{{ $hocSinh->ho_ten }}</h4>
@@ -51,7 +51,7 @@
                             <td class="text-start">{{ $mon->ten_mon }}</td>
                             @foreach(['1', '2', 'Ca năm'] as $k)
                                 @php $d = $ky[$k]['diem_mon'][$mon->id] ?? null; @endphp
-                                <td class="{{ !is_null($d) && $d < 5 ? 'text-danger fw-semibold' : '' }}">{{ $dd($d) }}</td>
+                                <td class="{{ \App\Support\Diem::thap($d) ? 'text-danger fw-semibold' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
                             @endforeach
                         </tr>
                         @endforeach
