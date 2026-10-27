@@ -141,6 +141,8 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     Route::prefix('tong-ket')->name('tong-ket.')->group(function () {
         Route::get('/',         [TongKetController::class, 'index'])->name('index')->middleware('permission:xem-tong-ket');
         Route::post('/gui-ket-qua', [TongKetController::class, 'guiKetQua'])->name('gui-ket-qua')->middleware(['permission:xem-tong-ket', 'permission:gui-tin-phu-huynh']);
+        Route::get('/he',       [TongKetController::class, 'he'])->name('he')->middleware('permission:xet-len-lop');
+        Route::post('/he',      [TongKetController::class, 'luuHe'])->name('luu-he')->middleware('permission:xet-len-lop');
         Route::get('/len-lop',  [TongKetController::class, 'lenLop'])->name('len-lop')->middleware('permission:xet-len-lop');
         Route::post('/len-lop', [TongKetController::class, 'luuLenLop'])->name('luu-len-lop')->middleware('permission:xet-len-lop');
     });

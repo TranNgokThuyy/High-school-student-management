@@ -2,6 +2,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\HocSinh;
+use App\Models\KiemTraLai;
+use App\Models\MonHoc;
+use App\Models\RenLuyenHe;
 use App\Models\LopHoc;
 use App\Services\ThongBaoPhuHuynhService;
 use App\Services\TongKetService;
@@ -115,6 +118,91 @@ class TongKetController extends Controller
 
         return redirect()->route('tin-nhan.show', $tinNhan)
             ->with('success', "Đã gửi kết quả {$tenKy} tới phụ huynh của {$ketQua->count()} học sinh.");
+    }
+
+    // Kiểm tra lại & rèn luyện hè (TT22 Điều 12, 13): học sinh chưa được lên lớp lần đầu
+    public function he(Request $request)
+    {
+        $request->validate(['lop_hoc_id' => 'nullable|exists:lop_hoc,id']);
+        $lopHoc = $this->getLopHoc();
+        $lop = $request->lop_hoc_id ? LopHoc::findOrFail($request->lop_hoc_id) : null;
+
+        $danhSach = collect();
+        $monHoc = collect();
+        if ($lop) {
+            ['mon_hoc' => $monHoc, 'ket_qua' => $ketQua] = $this->tongKet->tongKetLop($lop, 'Ca năm');
+            $danhSach = $ketQua->filter(fn ($r) => $r['dang_o_lop']
+                && $r['so_buoi_nghi'] <= TongKetService::SO_BUOI_NGHI_TOI_DA
+                && ($r['hoc_tap'] === 'Chưa đạt' || $r['ren_luyen'] === 'Chưa đạt'))
+                ->map(fn ($r) => $r + [
+                    // Môn phải kiểm tra lại: ĐTB cả năm < 5.0 hoặc nhận xét Chưa đạt
+                    'mon_kiem_tra_lai' => $r['hoc_tap'] === 'Chưa đạt'
+                        ? $monHoc->filter(fn ($m) => array_key_exists($m->id, $r['diem_mon'])
+                            && \App\Support\Diem::thap($r['diem_mon'][$m->id]))->values()
+                        : collect(),
+                ])
+                ->values();
+        }
+
+        return view('tong-ket.he', compact('lopHoc', 'lop', 'danhSach'));
+    }
+
+    public function luuHe(Request $request)
+    {
+        $request->validate([
+            'lop_hoc_id'       => 'required|exists:lop_hoc,id',
+            'kiem_tra_lai'     => 'nullable|array',
+            'kiem_tra_lai.*.*' => 'nullable|string|max:10',
+            'ren_luyen_he'     => 'nullable|array',
+            'ren_luyen_he.*'   => 'nullable|in:Đạt,Chưa đạt',
+        ]);
+        $lop = LopHoc::findOrFail($request->lop_hoc_id);
+        $hocSinhIds = $lop->hocSinh()->pluck('id')->map(fn ($id) => (int) $id);
+
+        $loi = [];
+        DB::transaction(function () use ($request, $lop, $hocSinhIds, &$loi) {
+            foreach ($request->input('kiem_tra_lai', []) as $hsId => $dsMon) {
+                if (!$hocSinhIds->contains((int) $hsId)) {
+                    continue;
+                }
+                foreach ($dsMon as $monId => $giaTri) {
+                    $mon = MonHoc::find($monId);
+                    if (!$mon || $giaTri === null || $giaTri === '') {
+                        continue;
+                    }
+                    $duLieu = ['diem' => null, 'ket_qua_nhan_xet' => null, 'lop_hoc_id' => $lop->id, 'nguoi_nhap_id' => auth()->id()];
+                    if ($mon->laMonNhanXet()) {
+                        if (!in_array($giaTri, ['Đạt', 'Chưa đạt'], true)) {
+                            continue;
+                        }
+                        $duLieu['ket_qua_nhan_xet'] = $giaTri;
+                    } else {
+                        $so = str_replace(',', '.', $giaTri);
+                        if (!is_numeric($so) || $so < 0 || $so > 10) {
+                            $loi[] = "Điểm \"{$giaTri}\" môn {$mon->ten_mon} không hợp lệ.";
+                            continue;
+                        }
+                        $duLieu['diem'] = round((float) $so, 2);
+                    }
+                    KiemTraLai::updateOrCreate(
+                        ['hoc_sinh_id' => (int) $hsId, 'mon_hoc_id' => $mon->id, 'nam_hoc' => $lop->nam_hoc], $duLieu
+                    );
+                }
+            }
+
+            foreach ($request->input('ren_luyen_he', []) as $hsId => $ketQua) {
+                if (!$hocSinhIds->contains((int) $hsId) || !$ketQua) {
+                    continue;
+                }
+                RenLuyenHe::updateOrCreate(
+                    ['hoc_sinh_id' => (int) $hsId, 'nam_hoc' => $lop->nam_hoc],
+                    ['lop_hoc_id' => $lop->id, 'ket_qua' => $ketQua, 'nguoi_nhap_id' => auth()->id()]
+                );
+            }
+        });
+
+        return redirect()->route('tong-ket.he', ['lop_hoc_id' => $lop->id])
+            ->with($loi ? 'error' : 'success', $loi ? implode(' ', $loi) : 'Đã lưu kết quả kiểm tra lại / rèn luyện hè và xét lại lên lớp.');
     }
 
     // Màn hình xét lên lớp / chuyển học sinh sang năm học mới
