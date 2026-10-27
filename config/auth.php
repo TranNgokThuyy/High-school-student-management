@@ -112,4 +112,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    // Bắt buộc quản trị viên bật xác thực 2 bước trước khi dùng hệ thống
+    'bat_buoc_2fa_quan_tri' => (bool) env('BAT_BUOC_2FA_QUAN_TRI', true),
+
 ];

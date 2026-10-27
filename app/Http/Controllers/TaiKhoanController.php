@@ -52,9 +52,11 @@ class TaiKhoanController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
             'is_active' => $request->boolean('is_active', true),
+            // Mật khẩu do quản trị viên đặt: người dùng phải đổi ở lần đăng nhập đầu
+            'phai_doi_mat_khau' => true,
         ]);
 
         $user->assignRole($validated['role']);
@@ -96,12 +98,20 @@ class TaiKhoanController extends Controller
         $taiKhoan->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'phone' => $validated['phone'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        if ($validated['password']) {
-            $taiKhoan->update(['password' => Hash::make($validated['password'])]);
+        if (!empty($validated['password'])) {
+            $taiKhoan->update(['password' => Hash::make($validated['password']), 'phai_doi_mat_khau' => true]);
+        }
+
+        // Người dùng mất điện thoại: quản trị viên gỡ xác thực 2 bước để họ thiết lập lại
+        if ($request->boolean('dat_lai_2fa') && $taiKhoan->id !== auth()->id()) {
+            $taiKhoan->forceFill([
+                'two_factor_secret' => null, 'two_factor_recovery_codes' => null,
+                'two_factor_confirmed_at' => null, 'two_factor_last_step' => null,
+            ])->save();
         }
 
         // Cập nhật role

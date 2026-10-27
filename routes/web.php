@@ -30,6 +30,8 @@ use App\Http\Controllers\ThongKeController;
 use App\Http\Controllers\KyThiController;
 use App\Http\Controllers\GiaoVienController;
 use App\Http\Controllers\PhuHuynhController;
+use App\Http\Controllers\BaoMatController;
+use App\Http\Controllers\Auth\XacThucHaiBuocController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -48,6 +50,18 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::view('/doi-mat-khau', 'doi-mat-khau')->name('doi-mat-khau');
+
+    // Xác thực 2 bước
+    Route::get('/bao-mat',                 [BaoMatController::class, 'index'])->name('bao-mat.index');
+    Route::post('/bao-mat',                [BaoMatController::class, 'bat'])->name('bao-mat.bat')->middleware('throttle:10,1');
+    Route::post('/bao-mat/ma-khoi-phuc',   [BaoMatController::class, 'taoLaiMaKhoiPhuc'])->name('bao-mat.ma-khoi-phuc');
+    Route::delete('/bao-mat',              [BaoMatController::class, 'tat'])->name('bao-mat.tat');
+});
+
+// Bước nhập mã xác thực khi đăng nhập
+Route::middleware('guest')->group(function () {
+    Route::get('/xac-thuc-2-buoc', [XacThucHaiBuocController::class, 'create'])->name('xac-thuc-hai-buoc');
+    Route::post('/xac-thuc-2-buoc', [XacThucHaiBuocController::class, 'store'])->middleware('throttle:5,1');
 });
 
 // ===== CỔNG PHỤ HUYNH =====

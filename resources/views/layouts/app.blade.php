@@ -377,6 +377,7 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ route('doi-mat-khau') }}"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
+                    <li><a class="dropdown-item" href="{{ route('bao-mat.index') }}"><i class="bi bi-shield-lock me-2"></i>Xác thực 2 bước</a></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

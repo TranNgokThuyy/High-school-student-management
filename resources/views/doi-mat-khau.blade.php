@@ -6,6 +6,9 @@
 
 <div class="card table-card" style="max-width:520px">
     <div class="card-body">
+        @if(auth()->user()->phai_doi_mat_khau)
+            <div class="alert alert-warning">Mật khẩu hiện tại do nhà trường cấp. Vui lòng đặt mật khẩu mới của riêng bạn để tiếp tục.</div>
+        @endif
         @if(session('status') === 'password-updated')
             <div class="alert alert-success">Đã đổi mật khẩu.</div>
         @endif
