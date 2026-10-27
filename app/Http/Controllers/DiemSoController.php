@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\DangKyMon;
 use App\Models\DiemSo;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
@@ -28,6 +29,9 @@ class DiemSoController extends Controller
         if ($request->filled(['lop_hoc_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc'])) {
             $selectedLop = LopHoc::with('hocSinh')->find($request->lop_hoc_id);
             $selectedMon = MonHoc::find($request->mon_hoc_id);
+            if ($selectedLop && $selectedMon) {
+                $this->chiHocSinhHocMon($selectedLop, $selectedMon, $request->nam_hoc);
+            }
 
             if ($selectedLop && $selectedMon) {
                 $diem = DiemSo::where([
@@ -62,6 +66,7 @@ class DiemSoController extends Controller
 
         $lop = LopHoc::with('hocSinh')->findOrFail($request->lop_hoc_id);
         $mon = MonHoc::findOrFail($request->mon_hoc_id);
+        $this->chiHocSinhHocMon($lop, $mon, $request->nam_hoc);
 
         $diemHienCo = DiemSo::where([
             'lop_hoc_id' => $request->lop_hoc_id,
@@ -100,7 +105,11 @@ class DiemSoController extends Controller
         $this->kiemTraPhanCong($request);
 
         // Chỉ nhận điểm của học sinh thuộc lớp đang nhập
-        $hocSinhCuaLop = HocSinh::where('lop_hoc_id', $request->lop_hoc_id)->pluck('id')->all();
+        $hocSinhCuaLop = DangKyMon::hocSinhHocMon(
+            $mon,
+            HocSinh::where('lop_hoc_id', $request->lop_hoc_id)->pluck('id')->map(fn ($id) => (int) $id)->all(),
+            $request->nam_hoc
+        );
         $diemHopLe = array_intersect_key($request->diem, array_flip($hocSinhCuaLop));
 
         DB::transaction(function () use ($request, $diemHopLe, $mon) {
@@ -157,5 +166,12 @@ class DiemSoController extends Controller
             403,
             'Bạn chưa được phân công giảng dạy môn này ở lớp này!'
         );
+    }
+
+    // Môn lựa chọn / chuyên đề: chỉ giữ học sinh đã đăng ký môn trong năm học
+    private function chiHocSinhHocMon(LopHoc $lop, MonHoc $mon, string $namHoc): void
+    {
+        $ids = DangKyMon::hocSinhHocMon($mon, $lop->hocSinh->pluck('id')->map(fn ($id) => (int) $id)->all(), $namHoc);
+        $lop->setRelation('hocSinh', $lop->hocSinh->whereIn('id', $ids)->values());
     }
 }

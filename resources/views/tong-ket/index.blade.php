@@ -133,8 +133,7 @@
                         @unless($r['dang_o_lop'])<span class="badge bg-light text-muted border ms-1">đã chuyển</span>@endunless
                     </td>
                     @foreach($monHoc as $mon)
-                        @php $d = $r['diem_mon'][$mon->id]; @endphp
-                        <td class="text-center {{ \App\Support\Diem::thap($d) ? 'diem-thap' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
+                        <td class="text-center {{ \App\Support\Diem::thapCua($r['diem_mon'], $mon->id) ? 'diem-thap' : '' }}">{{ \App\Support\Diem::cua($r['diem_mon'], $mon->id) }}</td>
                     @endforeach
                     <td class="text-center fw-semibold">{{ $r['dtb_chung'] ?? '—' }}</td>
                     <td class="text-center">

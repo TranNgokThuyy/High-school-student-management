@@ -1,6 +1,7 @@
 <?php
 namespace Database\Seeders;
 
+use App\Models\DangKyMon;
 use App\Models\DiemDanh;
 use App\Models\DiemSo;
 use App\Models\HanhKiem;
@@ -58,8 +59,15 @@ class DemoDataSeeder extends Seeder
             // Học lực khác nhau: vài em giỏi, vài em yếu
             $nen = [9.0, 8.4, 7.2, 6.4, 5.2, 8.8, 4.6, 7.8, 6.9, 9.3, 5.8, 7.5][$i];
 
+            // GDPT 2018: 4 môn lựa chọn theo tổ hợp tự nhiên / xã hội
+            $toHop = $i % 2 === 0 ? ['LY', 'HOA', 'SINH', 'TIN'] : ['DIA', 'GDCD', 'TIN', 'CNGT'];
+            $monCuaHs = $monHoc->filter(fn ($m) => !$m->laMonTuChon() || in_array($m->ma_mon, $toHop, true));
+            foreach ($monCuaHs->filter(fn ($m) => $m->laMonTuChon()) as $mon) {
+                DangKyMon::firstOrCreate(['hoc_sinh_id' => $hs->id, 'mon_hoc_id' => $mon->id, 'nam_hoc' => $namTruoc]);
+            }
+
             foreach (['1', '2'] as $hk) {
-                foreach ($monHoc as $mon) {
+                foreach ($monCuaHs as $mon) {
                     $d = fn() => max(0, min(10, round($nen + mt_rand(-12, 12) / 10, 1)));
                     $diem = DiemSo::firstOrNew([
                         'hoc_sinh_id' => $hs->id, 'mon_hoc_id' => $mon->id,

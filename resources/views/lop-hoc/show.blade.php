@@ -15,6 +15,11 @@
         </nav>
     </div>
     <div class="d-flex gap-2">
+        @if(auth()->user()->can('sua-hoc-sinh') && (auth()->user()->hasRole('quan-tri-vien') || $lopHoc->giao_vien_chu_nhiem_id == auth()->id()))
+        <a href="{{ route('dang-ky-mon.edit', $lopHoc) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-ui-checks-grid me-2"></i>Môn lựa chọn
+        </a>
+        @endif
         @can('xem-diem')
         <a href="{{ route('lop-hoc.so-diem', $lopHoc) }}" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-spreadsheet me-2"></i>Sổ điểm (Excel)

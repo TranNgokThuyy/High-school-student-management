@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 
+use App\Models\DangKyMon;
 use App\Models\DiemDanh;
 use App\Models\DiemSo;
 use App\Models\HanhKiem;
@@ -142,12 +143,25 @@ class TongKetService
 
         $diemTheoHs = $diemSo->groupBy('hoc_sinh_id');
 
-        $ketQua = $hocSinh->map(function (HocSinh $hs) use ($monHoc, $diemTheoHs, $hocKy, $hanhKiem, $diemDanh, $lop) {
-            $diemCuaHs = $diemTheoHs->get($hs->id, collect());
+        // Môn lựa chọn / chuyên đề (GDPT 2018): học sinh chỉ học môn đã đăng ký
+        $dangKy = DangKyMon::where('nam_hoc', $lop->nam_hoc)
+            ->whereIn('hoc_sinh_id', $hocSinh->pluck('id'))
+            ->get(['hoc_sinh_id', 'mon_hoc_id'])
+            ->groupBy('hoc_sinh_id')
+            ->map(fn ($ds) => $ds->pluck('mon_hoc_id')->map(fn ($id) => (int) $id)->all());
 
+        $ketQua = $hocSinh->map(function (HocSinh $hs) use ($monHoc, $diemTheoHs, $hocKy, $hanhKiem, $diemDanh, $lop, $dangKy) {
+            $diemCuaHs = $diemTheoHs->get($hs->id, collect());
+            $monDaDangKy = $dangKy->get($hs->id, []);
+
+            // diem_mon chỉ có khóa cho các môn học sinh học; môn tự chọn không đăng ký (và không có điểm) bị bỏ qua
             $diemMon = [];
             foreach ($monHoc as $mon) {
-                $diemMon[$mon->id] = $this->ketQuaMon($diemCuaHs->where('mon_hoc_id', $mon->id), $hocKy, $mon);
+                $diemCuaMon = $diemCuaHs->where('mon_hoc_id', $mon->id);
+                if ($mon->laMonTuChon() && !in_array($mon->id, $monDaDangKy, true) && $diemCuaMon->isEmpty()) {
+                    continue;
+                }
+                $diemMon[$mon->id] = $this->ketQuaMon($diemCuaMon, $hocKy, $mon);
             }
 
             $duDiem   = !in_array(null, $diemMon, true) && count($diemMon) > 0;
@@ -205,6 +219,11 @@ class TongKetService
             $monHoc = $monHoc->merge($tongKet['mon_hoc'])->unique('id');
             $theoKy[$hocKy] = $tongKet['ket_qua']->first(fn ($r) => $r['hoc_sinh']->id === $hocSinh->id);
         }
+
+        // Chỉ giữ các môn học sinh này học (bỏ môn lựa chọn không đăng ký)
+        $monHoc = $monHoc->filter(fn ($mon) => collect($theoKy)->contains(
+            fn ($r) => $r && array_key_exists($mon->id, $r['diem_mon'])
+        ));
 
         return ['lop' => $lop, 'nam_hoc' => $namHoc, 'mon_hoc' => $monHoc->sortBy('ten_mon')->values(), 'theo_ky' => $theoKy];
     }

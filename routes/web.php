@@ -23,6 +23,7 @@ use App\Http\Controllers\MaTraCuuController;
 use App\Http\Controllers\NhatKyController;
 use App\Http\Controllers\SaoLuuController;
 use App\Http\Controllers\SoDiemController;
+use App\Http\Controllers\DangKyMonController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -168,6 +169,10 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
             Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
         });
     });
+
+    // ===== ĐĂNG KÝ MÔN LỰA CHỌN (GDPT 2018) =====
+    Route::get('/lop-hoc/{lopHoc}/mon-lua-chon', [DangKyMonController::class, 'edit'])->name('dang-ky-mon.edit')->middleware('permission:sua-hoc-sinh');
+    Route::put('/lop-hoc/{lopHoc}/mon-lua-chon', [DangKyMonController::class, 'update'])->name('dang-ky-mon.update')->middleware('permission:sua-hoc-sinh');
 
     // ===== MÃ TRA CỨU PHỤ HUYNH =====
     Route::get('/lop-hoc/{lopHoc}/phieu-tra-cuu', [MaTraCuuController::class, 'inPhieuLop'])->name('ma-tra-cuu.phieu-lop')

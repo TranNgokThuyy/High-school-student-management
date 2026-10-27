@@ -18,4 +18,15 @@ class Diem
     {
         return is_string($ketQua) ? $ketQua === 'Chưa đạt' : (!is_null($ketQua) && $ketQua < 5);
     }
+
+    // Kết quả môn trong mảng diem_mon của tổng kết: chuỗi rỗng nếu học sinh không học môn đó
+    public static function cua(array $diemMon, int $monId): string
+    {
+        return array_key_exists($monId, $diemMon) ? self::hienThi($diemMon[$monId]) : '';
+    }
+
+    public static function thapCua(array $diemMon, int $monId): bool
+    {
+        return array_key_exists($monId, $diemMon) && self::thap($diemMon[$monId]);
+    }
 }
