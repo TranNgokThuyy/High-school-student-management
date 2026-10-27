@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @include('partials.pwa')
     <title>{{ config('app.name') }} - @yield('title', 'Trang chủ')</title>
     
     <!-- Bootstrap 5 -->
@@ -160,10 +161,25 @@
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.show { transform: translateX(0); }
+        .sidebar-backdrop { display: none; }
+        @media (max-width: 767.98px) {
+            .sidebar { transform: translateX(-100%); box-shadow: none; }
+            .sidebar.show { transform: translateX(0); box-shadow: 0 0 24px rgba(0,0,0,.35); }
+            .sidebar-backdrop.show { display: block; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 999; }
+            body.sidebar-open { overflow: hidden; }
             .main-content { margin-left: 0; }
+            .topbar { padding: 0 12px; z-index: 998; }
+            .content-area { padding: 16px 12px; }
+            /* Tiêu đề trang + nút thao tác: xuống dòng thay vì bóp chữ */
+            .content-area > .d-flex.justify-content-between { flex-wrap: wrap; gap: .5rem; }
+            .content-area > .d-flex.justify-content-between > h4 { font-size: 1.15rem; flex: 1 1 100%; }
+            .table thead th { white-space: nowrap; }
+            .alert-flash { left: 12px; right: 12px; min-width: 0; }
+            /* Bảng nhập liệu nhiều cột: giữ cột họ tên khi cuộn ngang */
+            .bang-co-dinh th:nth-child(2), .bang-co-dinh td:nth-child(2) { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 #e5e7eb; }
+            .bang-co-dinh thead th:nth-child(2) { background: #f8fafc; }
+            .bang-co-dinh th:first-child, .bang-co-dinh td:first-child { display: none; }
+            .form-control, .form-select { font-size: 16px; } /* iOS không tự phóng to khi chạm ô nhập */
         }
     </style>
     
@@ -171,6 +187,7 @@
 </head>
 <body>
     <!-- Sidebar -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="d-flex align-items-center gap-2">
@@ -326,12 +343,12 @@
     <div class="main-content">
         <!-- Topbar -->
         <div class="topbar">
-            <button class="btn btn-light btn-sm d-md-none" id="toggleSidebar">
+            <button class="btn btn-light btn-sm d-md-none" id="toggleSidebar" aria-label="Mở menu" aria-controls="sidebar" aria-expanded="false">
                 <i class="bi bi-list fs-5"></i>
             </button>
             
             <div class="d-flex align-items-center gap-3">
-                <span class="text-muted small">
+                <span class="text-muted small d-none d-sm-inline">
                     <i class="bi bi-calendar3"></i> {{ now()->format('d/m/Y') }}
                 </span>
             </div>
@@ -344,7 +361,7 @@
                          style="width:32px;height:32px;font-size:13px;font-weight:600;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
-                    <span class="small fw-semibold">{{ auth()->user()->name }}</span>
+                    <span class="small fw-semibold d-none d-sm-inline">{{ auth()->user()->name }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
@@ -397,10 +414,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Toggle sidebar mobile
-        document.getElementById('toggleSidebar')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('show');
-        });
+        // Menu trên điện thoại: mở/đóng sidebar, bấm nền tối / Esc / chọn mục để đóng
+        (function () {
+            const sidebar = document.getElementById('sidebar');
+            const nen = document.getElementById('sidebarBackdrop');
+            const nut = document.getElementById('toggleSidebar');
+            const datTrangThai = (mo) => {
+                sidebar.classList.toggle('show', mo);
+                nen.classList.toggle('show', mo);
+                document.body.classList.toggle('sidebar-open', mo);
+                nut?.setAttribute('aria-expanded', mo ? 'true' : 'false');
+            };
+            nut?.addEventListener('click', () => datTrangThai(!sidebar.classList.contains('show')));
+            nen.addEventListener('click', () => datTrangThai(false));
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') datTrangThai(false); });
+            sidebar.querySelectorAll('a.nav-link').forEach(a => a.addEventListener('click', () => datTrangThai(false)));
+        })();
         
         // Auto-dismiss alerts
         setTimeout(() => {

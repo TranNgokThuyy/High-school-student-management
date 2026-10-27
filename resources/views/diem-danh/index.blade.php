@@ -80,7 +80,7 @@
             @endcan
         </div>
         <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
+            <table class="table table-hover mb-0 align-middle bang-co-dinh">
                 <thead>
                     <tr>
                         <th style="width:50px" class="text-center">STT</th>

@@ -105,7 +105,7 @@ tr:hover .diem-input {
         @if($mon->laMonNhanXet())
         {{-- Môn đánh giá bằng nhận xét: mỗi lần đánh giá chọn Đ (Đạt) / CĐ (Chưa đạt) --}}
         <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
+            <table class="table table-hover mb-0 align-middle bang-co-dinh">
                 <thead>
                     <tr class="table-light">
                         <th style="width:45px" class="text-center">STT</th>
@@ -150,7 +150,7 @@ tr:hover .diem-input {
         </div>
         @else
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0 bang-co-dinh">
                 <thead>
                     <tr class="table-light">
                         <th style="width:45px" class="text-center">STT</th>

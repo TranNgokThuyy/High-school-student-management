@@ -25,7 +25,7 @@
                 <div class="row text-center mt-3 g-2 small">
                     <div class="col-4"><div class="fw-bold fs-5 {{ $t['tin_moi'] ? 'text-danger' : '' }}">{{ $t['tin_moi'] }}</div>tin mới</div>
                     <div class="col-4"><div class="fw-bold fs-5 {{ $t['vang'] ? 'text-warning' : '' }}">{{ $t['vang'] }}</div>buổi vắng (30 ngày)</div>
-                    <div class="col-4"><div class="fw-bold {{ $t['con_no'] > 0 ? 'text-danger' : 'text-success' }}" style="line-height:1.9rem">{{ $t['con_no'] > 0 ? Tien::dinhDang($t['con_no']) : 'Đã nộp đủ' }}</div>học phí</div>
+                    <div class="col-4"><div class="fw-bold {{ $t['con_no'] > 0 ? 'text-danger' : 'text-success' }}" style="line-height:1.9rem">{{ $t['con_no'] > 0 ? Tien::dinhDang($t['con_no']) : 'Đã nộp đủ' }}</div>{{ $t['con_no'] > 0 ? 'học phí còn nợ' : 'học phí' }}</div>
                 </div>
             </div>
         </a>

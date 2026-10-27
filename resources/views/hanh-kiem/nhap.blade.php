@@ -83,7 +83,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0 bang-co-dinh">
                 <thead class="table-light">
     <tr>
         <th style="width:40px" class="text-center">STT</th>
