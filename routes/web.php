@@ -28,6 +28,7 @@ use App\Http\Controllers\NhapDiemExcelController;
 use App\Http\Controllers\BienDongController;
 use App\Http\Controllers\ThongKeController;
 use App\Http\Controllers\KyThiController;
+use App\Http\Controllers\GiaoVienController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -179,6 +180,13 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
             Route::get('/{tenTep}/tai-ve',  [SaoLuuController::class, 'download'])->name('download');
             Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
         });
+    });
+
+    // ===== HỒ SƠ GIÁO VIÊN & GIỜ DẠY =====
+    Route::middleware('permission:quan-ly-giao-vien')->group(function () {
+        Route::get('/giao-vien', [GiaoVienController::class, 'index'])->name('giao-vien.index');
+        Route::get('/giao-vien/{giaoVien}/ho-so', [GiaoVienController::class, 'edit'])->name('giao-vien.edit');
+        Route::put('/giao-vien/{giaoVien}/ho-so', [GiaoVienController::class, 'update'])->name('giao-vien.update');
     });
 
     // ===== KỲ THI: LỊCH THI, PHÒNG THI, SỐ BÁO DANH =====

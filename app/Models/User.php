@@ -39,6 +39,11 @@ class User extends Authenticatable
         return $this->hasMany(PhanCongGiangDay::class, 'giao_vien_id');
     }
 
+    public function hoSoGiaoVien()
+    {
+        return $this->hasOne(HoSoGiaoVien::class);
+    }
+
     // Điểm số đã nhập
     public function diemSo()
     {

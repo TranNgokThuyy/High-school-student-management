@@ -231,6 +231,11 @@
     <i class="bi bi-book-half"></i> Quản lý môn học
 </a>
             @endcan
+            @can('quan-ly-giao-vien')
+            <a href="{{ route('giao-vien.index') }}" class="nav-link {{ request()->routeIs('giao-vien.*') ? 'active' : '' }}">
+                <i class="bi bi-person-badge"></i> Giáo viên & giờ dạy
+            </a>
+            @endcan
             @can('xem-phan-cong')
             <a href="{{ route('phan-cong.index') }}" class="nav-link {{ request()->routeIs('phan-cong.*') ? 'active' : '' }}">
                 <i class="bi bi-diagram-3"></i> Phân công giảng dạy
