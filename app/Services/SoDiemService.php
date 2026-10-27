@@ -69,8 +69,14 @@ class SoDiemService
                 $sheet->mergeCells($vung);
             }
 
+            // Môn lựa chọn: chỉ liệt kê học sinh học môn này
+            $hocSinhMon = $hocSinh->filter(fn ($hs) => array_key_exists(
+                $mon->id,
+                $caNam['ket_qua']->first(fn ($r) => $r['hoc_sinh']->id === $hs->id)['diem_mon']
+            ))->values();
+
             $dong = 7;
-            foreach ($hocSinh as $i => $hs) {
+            foreach ($hocSinhMon as $i => $hs) {
                 $giaTri = [$i + 1, $hs->ma_hoc_sinh, $hs->ho_ten];
                 foreach (['1', '2'] as $hk) {
                     $d = $diem["{$hs->id}-{$mon->id}-{$hk}"] ?? null;

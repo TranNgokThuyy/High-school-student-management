@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @include('partials.pwa')
     <title>{{ config('app.name') }} - @yield('title', 'Trang chủ')</title>
     
     <!-- Bootstrap 5 -->
@@ -153,11 +154,32 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.show { transform: translateX(0); }
+        @media print {
+            .sidebar, .topbar, .no-print, .alert-flash { display: none !important; }
             .main-content { margin-left: 0; }
+            body { background: #fff; }
+        }
+
+        /* Responsive */
+        .sidebar-backdrop { display: none; }
+        @media (max-width: 767.98px) {
+            .sidebar { transform: translateX(-100%); box-shadow: none; }
+            .sidebar.show { transform: translateX(0); box-shadow: 0 0 24px rgba(0,0,0,.35); }
+            .sidebar-backdrop.show { display: block; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 999; }
+            body.sidebar-open { overflow: hidden; }
+            .main-content { margin-left: 0; }
+            .topbar { padding: 0 12px; z-index: 998; }
+            .content-area { padding: 16px 12px; }
+            /* Tiêu đề trang + nút thao tác: xuống dòng thay vì bóp chữ */
+            .content-area > .d-flex.justify-content-between { flex-wrap: wrap; gap: .5rem; }
+            .content-area > .d-flex.justify-content-between > h4 { font-size: 1.15rem; flex: 1 1 100%; }
+            .table thead th { white-space: nowrap; }
+            .alert-flash { left: 12px; right: 12px; min-width: 0; }
+            /* Bảng nhập liệu nhiều cột: giữ cột họ tên khi cuộn ngang */
+            .bang-co-dinh th:nth-child(2), .bang-co-dinh td:nth-child(2) { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 #e5e7eb; }
+            .bang-co-dinh thead th:nth-child(2) { background: #f8fafc; }
+            .bang-co-dinh th:first-child, .bang-co-dinh td:first-child { display: none; }
+            .form-control, .form-select { font-size: 16px; } /* iOS không tự phóng to khi chạm ô nhập */
         }
     </style>
     
@@ -165,6 +187,7 @@
 </head>
 <body>
     <!-- Sidebar -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="d-flex align-items-center gap-2">
@@ -178,6 +201,21 @@
         </div>
         
         <div class="sidebar-nav mt-2">
+            @if(auth()->user()->laPhuHuynh())
+            <span class="nav-section">Phụ huynh</span>
+            <a href="{{ route('phu-huynh.index') }}" class="nav-link {{ request()->routeIs('phu-huynh.index') ? 'active' : '' }}">
+                <i class="bi bi-people"></i> Con của tôi
+            </a>
+            @foreach(auth()->user()->con()->orderBy('ho_ten')->get() as $conPH)
+            <a href="{{ route('phu-huynh.show', $conPH) }}" class="nav-link {{ request()->route('hocSinh')?->id === $conPH->id ? 'active' : '' }}">
+                <i class="bi bi-person"></i> {{ $conPH->ho_ten }}
+            </a>
+            @endforeach
+            <span class="nav-section">Tài khoản</span>
+            <a href="{{ route('doi-mat-khau') }}" class="nav-link {{ request()->routeIs('doi-mat-khau') ? 'active' : '' }}">
+                <i class="bi bi-key"></i> Đổi mật khẩu
+            </a>
+            @else
             <span class="nav-section">Tổng quan</span>
             <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2"></i> Dashboard
@@ -198,6 +236,11 @@
             </a>
             @endcan
             
+            @can('quan-ly-bien-dong')
+            <a href="{{ route('bien-dong.index') }}" class="nav-link {{ request()->routeIs('bien-dong.*') ? 'active' : '' }}">
+                <i class="bi bi-arrow-left-right"></i> Chuyển trường / thôi học
+            </a>
+            @endcan
             @can('xem-lop-hoc')
             <a href="{{ route('lop-hoc.index') }}" class="nav-link {{ request()->routeIs('lop-hoc.*') ? 'active' : '' }}">
                 <i class="bi bi-building"></i> Quản lý lớp học
@@ -226,6 +269,11 @@
     <i class="bi bi-book-half"></i> Quản lý môn học
 </a>
             @endcan
+            @can('quan-ly-giao-vien')
+            <a href="{{ route('giao-vien.index') }}" class="nav-link {{ request()->routeIs('giao-vien.*') ? 'active' : '' }}">
+                <i class="bi bi-person-badge"></i> Giáo viên & giờ dạy
+            </a>
+            @endcan
             @can('xem-phan-cong')
             <a href="{{ route('phan-cong.index') }}" class="nav-link {{ request()->routeIs('phan-cong.*') ? 'active' : '' }}">
                 <i class="bi bi-diagram-3"></i> Phân công giảng dạy
@@ -239,10 +287,15 @@
             
             @can('xem-hanh-kiem')
             <a href="{{ route('hanh-kiem.index') }}" class="nav-link {{ request()->routeIs('hanh-kiem.*') ? 'active' : '' }}">
-                <i class="bi bi-clipboard-check"></i> Hạnh kiểm & Chuyên cần
+                <i class="bi bi-clipboard-check"></i> Rèn luyện & Chuyên cần
             </a>
             @endcan
             
+            @can('quan-ly-ky-thi')
+            <a href="{{ route('ky-thi.index') }}" class="nav-link {{ request()->routeIs('ky-thi.*') ? 'active' : '' }}">
+                <i class="bi bi-pencil-square"></i> Kỳ thi & phòng thi
+            </a>
+            @endcan
             @can('xem-tong-ket')
             <a href="{{ route('tong-ket.index') }}" class="nav-link {{ request()->routeIs('tong-ket.*') ? 'active' : '' }}">
                 <i class="bi bi-award"></i> Tổng kết & Lên lớp
@@ -258,8 +311,11 @@
 
             @can('xem-bao-cao')
             <span class="nav-section">Báo cáo</span>
-            <a href="{{ route('bao-cao.index') }}" class="nav-link {{ request()->routeIs('bao-cao.*') ? 'active' : '' }}">
-                <i class="bi bi-bar-chart-line"></i> Báo cáo & Thống kê
+            <a href="{{ route('bao-cao.index') }}" class="nav-link {{ request()->routeIs('bao-cao.*') && !request()->routeIs('bao-cao.thong-ke') ? 'active' : '' }}">
+                <i class="bi bi-bar-chart-line"></i> Báo cáo
+            </a>
+            <a href="{{ route('bao-cao.thong-ke') }}" class="nav-link {{ request()->routeIs('bao-cao.thong-ke') ? 'active' : '' }}">
+                <i class="bi bi-graph-up"></i> Thống kê
             </a>
             @endcan
             
@@ -279,6 +335,12 @@
                 <i class="bi bi-database-check"></i> Sao lưu dữ liệu
             </a>
             @endcan
+            @role('quan-tri-vien')
+            <a href="{{ route('zalo-oa.index') }}" class="nav-link {{ request()->routeIs('zalo-oa.*') ? 'active' : '' }}">
+                <i class="bi bi-chat-square-text"></i> Kết nối Zalo OA
+            </a>
+            @endrole
+            @endif
         </div>
     </nav>
     
@@ -286,12 +348,12 @@
     <div class="main-content">
         <!-- Topbar -->
         <div class="topbar">
-            <button class="btn btn-light btn-sm d-md-none" id="toggleSidebar">
+            <button class="btn btn-light btn-sm d-md-none" id="toggleSidebar" aria-label="Mở menu" aria-controls="sidebar" aria-expanded="false">
                 <i class="bi bi-list fs-5"></i>
             </button>
             
             <div class="d-flex align-items-center gap-3">
-                <span class="text-muted small">
+                <span class="text-muted small d-none d-sm-inline">
                     <i class="bi bi-calendar3"></i> {{ now()->format('d/m/Y') }}
                 </span>
             </div>
@@ -304,7 +366,7 @@
                          style="width:32px;height:32px;font-size:13px;font-weight:600;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
-                    <span class="small fw-semibold">{{ auth()->user()->name }}</span>
+                    <span class="small fw-semibold d-none d-sm-inline">{{ auth()->user()->name }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
@@ -319,6 +381,8 @@
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ route('doi-mat-khau') }}"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
+                    <li><a class="dropdown-item" href="{{ route('bao-mat.index') }}"><i class="bi bi-shield-lock me-2"></i>Xác thực 2 bước</a></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -356,10 +420,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Toggle sidebar mobile
-        document.getElementById('toggleSidebar')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('show');
-        });
+        // Menu trên điện thoại: mở/đóng sidebar, bấm nền tối / Esc / chọn mục để đóng
+        (function () {
+            const sidebar = document.getElementById('sidebar');
+            const nen = document.getElementById('sidebarBackdrop');
+            const nut = document.getElementById('toggleSidebar');
+            const datTrangThai = (mo) => {
+                sidebar.classList.toggle('show', mo);
+                nen.classList.toggle('show', mo);
+                document.body.classList.toggle('sidebar-open', mo);
+                nut?.setAttribute('aria-expanded', mo ? 'true' : 'false');
+            };
+            nut?.addEventListener('click', () => datTrangThai(!sidebar.classList.contains('show')));
+            nen.addEventListener('click', () => datTrangThai(false));
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') datTrangThai(false); });
+            sidebar.querySelectorAll('a.nav-link').forEach(a => a.addEventListener('click', () => datTrangThai(false)));
+        })();
         
         // Auto-dismiss alerts
         setTimeout(() => {
@@ -369,6 +445,7 @@
         }, 4000);
     </script>
     
+    @include('partials.kiem-tra-form')
     @stack('scripts')
 </body>
 </html>

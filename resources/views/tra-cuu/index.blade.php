@@ -28,6 +28,7 @@
                     <button class="btn btn-primary w-100"><i class="bi bi-search me-2"></i>Tra cứu</button>
                 </form>
                 <p class="small text-muted mt-3 mb-0">Mã học sinh và mã tra cứu được ghi trên phiếu nhà trường phát cho phụ huynh. Nếu mất phiếu, vui lòng liên hệ giáo viên chủ nhiệm để được cấp lại.</p>
+                <p class="small text-center mt-3 mb-0"><a href="{{ route('phu-huynh.dang-ky') }}">Đăng ký tài khoản phụ huynh</a> để theo dõi nhiều con, không phải nhập mã mỗi lần.</p>
             </div>
         </div>
     </div>

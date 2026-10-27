@@ -133,8 +133,7 @@
                         @unless($r['dang_o_lop'])<span class="badge bg-light text-muted border ms-1">đã chuyển</span>@endunless
                     </td>
                     @foreach($monHoc as $mon)
-                        @php $d = $r['diem_mon'][$mon->id]; @endphp
-                        <td class="text-center {{ \App\Support\Diem::thap($d) ? 'diem-thap' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
+                        <td class="text-center {{ \App\Support\Diem::thapCua($r['diem_mon'], $mon->id) ? 'diem-thap' : '' }}">{{ \App\Support\Diem::cua($r['diem_mon'], $mon->id) }}</td>
                     @endforeach
                     <td class="text-center fw-semibold">{{ $r['dtb_chung'] ?? '—' }}</td>
                     <td class="text-center">
@@ -171,7 +170,7 @@
     <div class="card-footer bg-white small text-muted">
         Xếp loại theo Thông tư 22/2021/TT-BGDĐT: <b>Tốt</b> (mọi môn ≥ 6.5, ít nhất 6 môn ≥ 8.0) ·
         <b>Khá</b> (mọi môn ≥ 5.0, ít nhất 6 môn ≥ 6.5) · <b>Đạt</b> (tối đa 1 môn &lt; 5.0, không môn nào &lt; 3.5) ·
-        ĐTB môn cả năm = (HK1 + 2×HK2)/3. Rèn luyện quy đổi từ hạnh kiểm (Trung bình → Đạt, Yếu → Chưa đạt).
+        ĐTB môn cả năm = (HK1 + 2×HK2)/3. Rèn luyện cả năm tính từ HK1, HK2 theo Điều 8 TT22.
     </div>
 </div>
 @endif

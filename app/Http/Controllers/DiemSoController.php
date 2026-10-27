@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\DangKyMon;
 use App\Models\DiemSo;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
@@ -28,6 +29,9 @@ class DiemSoController extends Controller
         if ($request->filled(['lop_hoc_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc'])) {
             $selectedLop = LopHoc::with('hocSinh')->find($request->lop_hoc_id);
             $selectedMon = MonHoc::find($request->mon_hoc_id);
+            if ($selectedLop && $selectedMon) {
+                $this->chiHocSinhHocMon($selectedLop, $selectedMon, $request->nam_hoc);
+            }
 
             if ($selectedLop && $selectedMon) {
                 $diem = DiemSo::where([
@@ -62,6 +66,7 @@ class DiemSoController extends Controller
 
         $lop = LopHoc::with('hocSinh')->findOrFail($request->lop_hoc_id);
         $mon = MonHoc::findOrFail($request->mon_hoc_id);
+        $this->chiHocSinhHocMon($lop, $mon, $request->nam_hoc);
 
         $diemHienCo = DiemSo::where([
             'lop_hoc_id' => $request->lop_hoc_id,
@@ -85,22 +90,31 @@ class DiemSoController extends Controller
             'hoc_ky' => 'required|in:1,2',
             'nam_hoc' => 'required|string',
             'diem' => 'required|array',
-            'diem.*.diem_tx1' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_tx2' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_tx3' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_tx4' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_gk' => 'nullable|numeric|min:0|max:10',
-            'diem.*.diem_ck' => 'nullable|numeric|min:0|max:10',
+            'diem.*.diem_tx1' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_tx2' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_tx3' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_tx4' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_gk' => 'nullable|numeric|decimal:0,2|min:0|max:10',
+            'diem.*.diem_ck' => 'nullable|numeric|decimal:0,2|min:0|max:10',
             'diem.*.nhan_xet' => 'nullable|array',
             'diem.*.nhan_xet.*' => 'nullable|in:Đ,CĐ',
+        ], [
+            'diem.*.*.decimal' => 'Điểm chỉ được có tối đa 2 chữ số thập phân.',
+            'diem.*.*.max'     => 'Điểm phải từ 0 đến 10.',
+            'diem.*.*.min'     => 'Điểm phải từ 0 đến 10.',
         ]);
+        $this->kiemTraNamHocCuaLop($request);
 
         $mon = MonHoc::findOrFail($request->mon_hoc_id);
 
         $this->kiemTraPhanCong($request);
 
         // Chỉ nhận điểm của học sinh thuộc lớp đang nhập
-        $hocSinhCuaLop = HocSinh::where('lop_hoc_id', $request->lop_hoc_id)->pluck('id')->all();
+        $hocSinhCuaLop = DangKyMon::hocSinhHocMon(
+            $mon,
+            HocSinh::where('lop_hoc_id', $request->lop_hoc_id)->pluck('id')->map(fn ($id) => (int) $id)->all(),
+            $request->nam_hoc
+        );
         $diemHopLe = array_intersect_key($request->diem, array_flip($hocSinhCuaLop));
 
         DB::transaction(function () use ($request, $diemHopLe, $mon) {
@@ -114,24 +128,7 @@ class DiemSoController extends Controller
                 ]);
 
                 $record->giao_vien_id = auth()->id();
-
-                if ($mon->laMonNhanXet()) {
-                    // Môn đánh giá bằng nhận xét: lưu Đ / CĐ cho từng lần đánh giá
-                    $record->nhan_xet = collect($diemData['nhan_xet'] ?? [])
-                        ->only(DiemSo::COT_NHAN_XET)->filter()->all() ?: null;
-                    $record->ket_qua_nhan_xet = $record->tinhKetQuaNhanXet();
-                } else {
-                    $record->fill([
-                        'diem_tx1' => $diemData['diem_tx1'] ?? null,
-                        'diem_tx2' => $diemData['diem_tx2'] ?? null,
-                        'diem_tx3' => $diemData['diem_tx3'] ?? null,
-                        'diem_tx4' => $diemData['diem_tx4'] ?? null,
-                        'diem_gk' => $diemData['diem_gk'] ?? null,
-                        'diem_ck' => $diemData['diem_ck'] ?? null,
-                    ]);
-                    $record->diem_trung_binh = $record->tinhDiemTrungBinh();
-                }
-
+                $record->ganDiem($diemData, $mon);
                 $record->save();
             }
         });
@@ -142,6 +139,17 @@ class DiemSoController extends Controller
             'hoc_ky' => $request->hoc_ky,
             'nam_hoc' => $request->nam_hoc,
         ])->with('success', 'Đã lưu điểm thành công!');
+    }
+
+    // Điểm phải gắn đúng năm học của lớp, tránh lưu nhầm sang năm khác khi sửa tham số trên URL
+    private function kiemTraNamHocCuaLop(Request $request): void
+    {
+        $namHocLop = \App\Models\LopHoc::whereKey($request->lop_hoc_id)->value('nam_hoc');
+        if ($namHocLop !== $request->nam_hoc) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'nam_hoc' => "Lớp này thuộc năm học {$namHocLop}, không phải {$request->nam_hoc}.",
+            ]);
+        }
     }
 
     private function kiemTraPhanCong(Request $request): void
@@ -157,5 +165,12 @@ class DiemSoController extends Controller
             403,
             'Bạn chưa được phân công giảng dạy môn này ở lớp này!'
         );
+    }
+
+    // Môn lựa chọn / chuyên đề: chỉ giữ học sinh đã đăng ký môn trong năm học
+    private function chiHocSinhHocMon(LopHoc $lop, MonHoc $mon, string $namHoc): void
+    {
+        $ids = DangKyMon::hocSinhHocMon($mon, $lop->hocSinh->pluck('id')->map(fn ($id) => (int) $id)->all(), $namHoc);
+        $lop->setRelation('hocSinh', $lop->hocSinh->whereIn('id', $ids)->values());
     }
 }

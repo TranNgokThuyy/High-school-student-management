@@ -1,9 +1,15 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\BienDongHocSinh;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
 use App\Services\StudentSpreadsheetReader;
+use App\Rules\Cccd;
+use App\Rules\HoTen;
+use App\Rules\NamHoc as NamHocRule;
+use App\Rules\SoDienThoai;
+use App\Support\ChuanHoa;
 use App\Support\NamHoc;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -146,26 +152,18 @@ class HocSinhController extends Controller implements HasMiddleware
             $row['ngay_sinh'] = $this->normalizeSpreadsheetDate($row['ngay_sinh'] ?? null);
             $row['gioi_tinh'] = $this->normalizeGioiTinh($row['gioi_tinh'] ?? null);
 
-            $validator = Validator::make($row, [
-                'ho_ten' => ['required', 'string', 'max:100'],
-                'ngay_sinh' => ['required', 'date_format:Y-m-d', 'before:today'],
-                'gioi_tinh' => ['required', 'in:Nam,Nữ,Khác'],
+            foreach (['so_dien_thoai', 'so_dien_thoai_cha', 'so_dien_thoai_me'] as $cot) {
+                $row[$cot] = ChuanHoa::soDienThoai($row[$cot] ?? null);
+            }
+            $row['cccd'] = ChuanHoa::cccd($row['cccd'] ?? null);
+
+            $validator = Validator::make($row, self::quyTacHoSo() + [
+                'ngay_sinh' => ['required', 'date_format:Y-m-d', ...self::quyTacNgaySinh()],
                 'ten_lop' => ['required', 'string', 'max:50'],
-                'nam_hoc' => ['required', 'regex:/^\d{4}-\d{4}$/'],
-                'cccd' => ['nullable', 'digits_between:9,12', 'unique:hoc_sinh,cccd'],
-                'so_dien_thoai' => ['nullable', 'digits_between:9,12'],
-                'email' => ['nullable', 'email', 'max:100'],
-                'dan_toc' => ['nullable', 'string', 'max:50'],
-                'dia_chi_thuong_tru' => ['nullable', 'string', 'max:255'],
-                'ho_ten_cha' => ['nullable', 'string', 'max:100'],
-                'so_dien_thoai_cha' => ['nullable', 'digits_between:9,12'],
-                'ho_ten_me' => ['nullable', 'string', 'max:100'],
-                'so_dien_thoai_me' => ['nullable', 'digits_between:9,12'],
-                'email_phu_huynh' => ['nullable', 'email', 'max:100'],
-            ], [
+                'nam_hoc' => ['required', new NamHocRule()],
+                'cccd' => ['nullable', new Cccd(), 'unique:hoc_sinh,cccd'],
+            ], self::thongBaoHoSo() + [
                 'ngay_sinh.date_format' => 'Ngày sinh phải có dạng dd/mm/yyyy.',
-                'gioi_tinh.in' => 'Giới tính phải là Nam, Nữ hoặc Khác.',
-                'cccd.unique' => 'CCCD đã tồn tại trong hệ thống.',
             ]);
 
             if ($validator->fails()) {
@@ -245,42 +243,56 @@ class HocSinhController extends Controller implements HasMiddleware
         return $value;
     }
 
+    // Luật kiểm tra hồ sơ học sinh dùng chung cho thêm, sửa và nhập Excel
+    private static function quyTacHoSo(): array
+    {
+        return [
+            'ho_ten'             => ['required', 'string', 'max:100', new HoTen()],
+            'gioi_tinh'          => 'required|in:Nam,Nữ,Khác',
+            'dan_toc'            => 'nullable|string|max:50',
+            'ton_giao'           => 'nullable|string|max:50',
+            'dia_chi_thuong_tru' => 'nullable|string|max:255',
+            'dia_chi_tam_tru'    => 'nullable|string|max:255',
+            'so_dien_thoai'      => ['nullable', new SoDienThoai()],
+            'email'              => 'nullable|email:rfc|max:100',
+            'ho_ten_cha'         => ['nullable', 'string', 'max:100', new HoTen()],
+            'nghe_nghiep_cha'    => 'nullable|string|max:100',
+            'so_dien_thoai_cha'  => ['nullable', new SoDienThoai()],
+            'ho_ten_me'          => ['nullable', 'string', 'max:100', new HoTen()],
+            'nghe_nghiep_me'     => 'nullable|string|max:100',
+            'so_dien_thoai_me'   => ['nullable', new SoDienThoai()],
+            'email_phu_huynh'    => 'nullable|email:rfc|max:100',
+        ];
+    }
+
+    // Học sinh THPT: từ 10 đến 30 tuổi (rộng để không chặn trường hợp học sớm / học lại)
+    private static function quyTacNgaySinh(): array
+    {
+        return [
+            'before_or_equal:' . today()->subYears(10)->toDateString(),
+            'after_or_equal:' . today()->subYears(30)->toDateString(),
+        ];
+    }
+
+    private static function thongBaoHoSo(): array
+    {
+        return [
+            'ngay_sinh.before_or_equal' => 'Học sinh phải từ 10 tuổi trở lên, kiểm tra lại ngày sinh.',
+            'ngay_sinh.after_or_equal'  => 'Ngày sinh không hợp lệ (học sinh trên 30 tuổi).',
+            'gioi_tinh.in'              => 'Giới tính phải là Nam, Nữ hoặc Khác.',
+            'cccd.unique'               => 'Số CCCD này đã có trong hệ thống.',
+        ];
+    }
+
     public function store(Request $request)
 {
-    $validated = $request->validate([
-        'ho_ten'             => 'required|string|max:100',
-        'ngay_sinh'          => 'required|date|before:today',
-        'gioi_tinh'          => 'required|in:Nam,Nữ,Khác',
-        'dan_toc'            => 'nullable|string|max:50',
-        'ton_giao'           => 'nullable|string|max:50',
-        'cccd'               => 'nullable|digits_between:9,12|unique:hoc_sinh,cccd',
-        'dia_chi_thuong_tru' => 'nullable|string|max:255',
-        'dia_chi_tam_tru'    => 'nullable|string|max:255',
-        'so_dien_thoai'      => 'nullable|digits_between:9,12',
-        'email'              => 'nullable|email|max:100',
-        'ho_ten_cha'         => 'nullable|string|max:100',
-        'nghe_nghiep_cha'    => 'nullable|string|max:100',
-        'so_dien_thoai_cha'  => 'nullable|digits_between:9,12',
-        'ho_ten_me'          => 'nullable|string|max:100',
-        'nghe_nghiep_me'     => 'nullable|string|max:100',
-        'so_dien_thoai_me'   => 'nullable|digits_between:9,12',
-        'email_phu_huynh'    => 'nullable|email|max:100',
-        'lop_hoc_id'         => 'nullable|exists:lop_hoc,id',
-        'trang_thai'         => 'required|in:Đang học,Đã tốt nghiệp,Thôi học,Chuyển trường',
-        'anh_the'            => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-    ], [
-        'ho_ten.required'   => 'Vui lòng nhập họ tên',
-        'ngay_sinh.required'=> 'Vui lòng nhập ngày sinh',
-        'ngay_sinh.before'  => 'Ngày sinh phải trước ngày hôm nay',
-        'cccd.unique'       => 'Số CCCD này đã tồn tại trong hệ thống',
-        'gioi_tinh.required'=> 'Vui lòng chọn giới tính',
-        'cccd.digits_between' => 'CCCD phải từ 9 đến 12 chữ số',
-        'so_dien_thoai.digits_between' => 'Số điện thoại phải từ 9 đến 12 chữ số',
-        'so_dien_thoai_cha.digits_between' => 'Số điện thoại của cha phải từ 9 đến 12 chữ số',
-        'so_dien_thoai_me.digits_between' => 'Số điện thoại của mẹ phải từ 9 đến 12 chữ số',
-        
-        
-    ]);
+    $validated = $request->validate(self::quyTacHoSo() + [
+        'ngay_sinh'  => ['required', 'date', ...self::quyTacNgaySinh()],
+        'cccd'       => ['nullable', new Cccd(), 'unique:hoc_sinh,cccd'],
+        'lop_hoc_id' => 'nullable|exists:lop_hoc,id',
+        'trang_thai' => 'required|in:Đang học,Đã tốt nghiệp,Thôi học,Chuyển trường',
+        'anh_the'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ], self::thongBaoHoSo());
 
     // Upload ảnh thẻ
     if ($request->hasFile('anh_the')) {
@@ -288,8 +300,30 @@ class HocSinhController extends Controller implements HasMiddleware
             ->store('hoc-sinh/anh-the', 'public');
     }
 
+    $chuyenDen = $request->validate([
+        'chuyen_den'           => 'nullable|boolean',
+        'truong_cu'            => 'required_if:chuyen_den,1|nullable|string|max:200',
+        'so_quyet_dinh_den'    => 'nullable|string|max:50',
+        'ngay_chuyen_den'      => 'nullable|date|before_or_equal:today',
+    ], ['truong_cu.required_if' => 'Vui lòng nhập trường học sinh chuyển đi']);
+
     // KHÔNG cần set ma_hoc_sinh — Model tự tạo trong booted()
     $hocSinh = HocSinh::create($validated);
+
+    // Học sinh chuyển đến từ trường khác: ghi nhận biến động có quyết định
+    if ($request->boolean('chuyen_den')) {
+        $ngay = Carbon::parse($chuyenDen['ngay_chuyen_den'] ?? today());
+        BienDongHocSinh::create([
+            'hoc_sinh_id'   => $hocSinh->id,
+            'loai'          => 'Chuyển đến',
+            'ngay'          => $ngay,
+            'so_quyet_dinh' => $chuyenDen['so_quyet_dinh_den'] ?? null,
+            'truong'        => $chuyenDen['truong_cu'],
+            'lop_hoc_id'    => $hocSinh->lop_hoc_id,
+            'nam_hoc'       => NamHoc::hienTai($ngay),
+            'nguoi_tao_id'  => auth()->id(),
+        ]);
+    }
 
     // Cập nhật sĩ số lớp
     if ($hocSinh->lop_hoc_id) {
@@ -314,28 +348,13 @@ class HocSinhController extends Controller implements HasMiddleware
 
     public function update(Request $request, HocSinh $hocSinh)
     {
-        $validated = $request->validate([
-            'ho_ten' => 'required|string|max:100',
-            'ngay_sinh' => 'required|date|before:today',
-            'gioi_tinh' => 'required|in:Nam,Nữ,Khác',
-            'dan_toc' => 'nullable|string|max:50',
-            'ton_giao' => 'nullable|string|max:50',
-            'dia_chi_thuong_tru' => 'nullable|string|max:255',
-            'dia_chi_tam_tru' => 'nullable|string|max:255',
-            'so_dien_thoai' => 'nullable|digits_between:9,12|max:12',
-            'email' => 'nullable|email|max:100',
-            'cccd' => "nullable|digits_between:9,12|unique:hoc_sinh,cccd,{$hocSinh->id}",
-            'ho_ten_cha' => 'nullable|string|max:100',
-            'nghe_nghiep_cha' => 'nullable|string|max:100',
-            'so_dien_thoai_cha' => 'nullable|digits_between:9,12|max:12',
-            'ho_ten_me' => 'nullable|string|max:100',
-            'nghe_nghiep_me' => 'nullable|string|max:100',
-            'so_dien_thoai_me' => 'nullable|digits_between:9,12|max:12',
-            'email_phu_huynh' => 'nullable|email|max:100',
+        $validated = $request->validate(self::quyTacHoSo() + [
+            'ngay_sinh'  => ['required', 'date', ...self::quyTacNgaySinh()],
+            'cccd'       => ['nullable', new Cccd(), "unique:hoc_sinh,cccd,{$hocSinh->id}"],
             'trang_thai' => 'required|in:Đang học,Đã tốt nghiệp,Thôi học,Chuyển trường',
             'lop_hoc_id' => 'nullable|exists:lop_hoc,id',
-            'anh_the' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+            'anh_the'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], self::thongBaoHoSo());
 
         $lopCu = $hocSinh->lop_hoc_id;
 
@@ -351,10 +370,9 @@ class HocSinhController extends Controller implements HasMiddleware
         $hocSinh->update($validated);
 
         // Cập nhật sĩ số
-        if ($lopCu != ($validated['lop_hoc_id'] ?? null)) {
-            if ($lopCu) $this->capNhatSiSo($lopCu);
-            if ($validated['lop_hoc_id'] ?? null) $this->capNhatSiSo($validated['lop_hoc_id']);
-        }
+        // Đổi lớp hoặc đổi trạng thái đều làm thay đổi sĩ số
+        if ($lopCu) $this->capNhatSiSo($lopCu);
+        if (($validated['lop_hoc_id'] ?? null) && $validated['lop_hoc_id'] != $lopCu) $this->capNhatSiSo($validated['lop_hoc_id']);
 
         return redirect()->route('hoc-sinh.show', $hocSinh)
             ->with('success', 'Cập nhật thông tin học sinh thành công!');
@@ -377,7 +395,7 @@ class HocSinhController extends Controller implements HasMiddleware
     {
         $lop = LopHoc::find($lopId);
         if ($lop) {
-            $lop->update(['si_so' => $lop->hocSinh()->count()]);
+            $lop->capNhatSiSo();
         }
     }
 }

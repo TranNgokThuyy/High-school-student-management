@@ -48,4 +48,15 @@ class PhanQuyenTest extends QuanLyTestCase
 
         $this->assertGuest();
     }
+
+    public function test_route_giao_dien_hoc_sinh_khong_bi_route_api_ghi_de(): void
+    {
+        // Trước đây apiResource('hoc-sinh') trùng tên khiến link "Quản lý học sinh" trỏ sang /api/hoc-sinh (JSON)
+        $this->assertSame(url('/hoc-sinh'), route('hoc-sinh.index'));
+        $this->assertSame(url('/hoc-sinh/5'), route('hoc-sinh.show', 5));
+        $this->assertSame(url('/api/hoc-sinh/5'), route('api.hoc-sinh.show', 5));
+
+        $admin = $this->taoUser('quan-tri-vien');
+        $this->actingAs($admin)->get('/dashboard')->assertSee('href="' . url('/hoc-sinh') . '"', false);
+    }
 }

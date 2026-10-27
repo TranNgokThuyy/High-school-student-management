@@ -26,14 +26,34 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Đã bật xác thực 2 bước: chưa cho đăng nhập, chuyển sang bước nhập mã (hiệu lực 5 phút)
+        if ($user->daBatHaiBuoc()) {
+            Auth::guard('web')->logout();
+            $request->session()->regenerate();
+            $request->session()->put('dang_nhap_2fa', [
+                'id' => $user->id, 'ghi_nho' => $request->boolean('remember'), 'het_han' => now()->addMinutes(5)->timestamp,
+            ]);
+
+            return redirect()->route('xac-thuc-hai-buoc');
+        }
+
+        return self::hoanTatDangNhap($request, $user);
+    }
+
+    public static function hoanTatDangNhap(Request $request, \App\Models\User $user): RedirectResponse
+    {
         $request->session()->regenerate();
 
         // Ghi nhận thời gian đăng nhập cuối
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
         $user->update(['last_login_at' => now()]);
 
-        // Redirect về trang dashboard (phân quyền xử lý trong view)
+        if ($user->laPhuHuynh()) {
+            return redirect()->route('phu-huynh.index');
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

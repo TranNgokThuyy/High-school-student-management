@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Sao lưu dữ liệu tự động mỗi ngày lúc 01:30 (cần cron chạy `php artisan schedule:run` mỗi phút)
 Schedule::command('sao-luu:tao')->dailyAt('01:30');
+
+// Access token Zalo OA chỉ sống ~25 giờ: kiểm tra mỗi giờ, làm mới khi còn dưới 3 giờ
+Schedule::command('zalo:lam-moi-token')->hourly()->withoutOverlapping();

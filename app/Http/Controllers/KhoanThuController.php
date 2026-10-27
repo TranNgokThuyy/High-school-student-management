@@ -71,7 +71,7 @@ class KhoanThuController extends Controller
         return $request->validate([
             'ten'      => 'required|string|max:150',
             'loai'     => 'required|in:' . implode(',', KhoanThu::LOAI),
-            'nam_hoc'  => 'required|regex:/^\d{4}-\d{4}$/',
+            'nam_hoc'  => ['required', new \App\Rules\NamHoc()],
             'hoc_ky'   => 'required|in:1,2,Ca năm',
             'khoi'     => 'required|in:10,11,12,Tất cả',
             'so_tien'  => 'required|integer|min:0|max:1000000000',

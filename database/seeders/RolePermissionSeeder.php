@@ -19,6 +19,7 @@ class RolePermissionSeeder extends Seeder
             'password' => Hash::make('Admin@123456'),
             'phone' => '0123456789',
             'is_active' => true,
+            'phai_doi_mat_khau' => true, // mật khẩu mặc định công khai trong README
         ]);
         $admin->assignRole('quan-tri-vien');
 
@@ -28,6 +29,7 @@ class RolePermissionSeeder extends Seeder
             'password' => Hash::make('Gvcn@123456'),
             'phone' => '0987654321',
             'is_active' => true,
+            'phai_doi_mat_khau' => true, // mật khẩu mặc định công khai trong README
         ]);
         $gvcn->assignRole('giao-vien-chu-nhiem');
 

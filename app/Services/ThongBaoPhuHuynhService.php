@@ -55,12 +55,14 @@ class ThongBaoPhuHuynhService
                 }
 
                 $soDienThoai = $hs->so_dien_thoai_phu_huynh;
+                // Hồ sơ chưa có email phụ huynh thì dùng email tài khoản phụ huynh đã liên kết
+                $email = $hs->email_phu_huynh ?: $hs->taiKhoanPhuHuynh()->where('is_active', true)->value('email');
                 $tinNhan->nguoiNhan()->create([
                     'hoc_sinh_id'      => $hs->id,
                     'noi_dung'         => $noiDungHs,
-                    'email'            => $hs->email_phu_huynh,
+                    'email'            => $email,
                     'so_dien_thoai'    => $soDienThoai,
-                    'trang_thai_email' => $this->trangThaiBanDau(in_array('email', $kenh), $hs->email_phu_huynh),
+                    'trang_thai_email' => $this->trangThaiBanDau(in_array('email', $kenh), $email),
                     'trang_thai_sms'   => $this->trangThaiBanDau(in_array('sms', $kenh), $soDienThoai),
                     'trang_thai_zalo'  => $this->trangThaiBanDau(in_array('zalo', $kenh), $soDienThoai),
                 ]);

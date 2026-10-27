@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HocSinh;
 use App\Models\LopHoc;
+use App\Models\User;
 
 // Quản lý mã tra cứu kết quả của phụ huynh: in phiếu theo lớp, cấp lại mã
 class MaTraCuuController extends Controller
@@ -31,5 +32,15 @@ class MaTraCuuController extends Controller
         $hocSinh->update(['ma_tra_cuu' => HocSinh::taoMaTraCuu()]);
 
         return back()->with('success', "Đã cấp mã tra cứu mới cho {$hocSinh->ho_ten}: {$hocSinh->ma_tra_cuu}. Mã cũ không còn dùng được.");
+    }
+
+    // Gỡ tài khoản phụ huynh khỏi học sinh (VD: đăng ký nhầm, gia đình báo mất mã)
+    public function goTaiKhoan(HocSinh $hocSinh, User $taiKhoan)
+    {
+        $this->kiemTraQuyenLop($hocSinh->lopHoc);
+
+        $hocSinh->taiKhoanPhuHuynh()->detach($taiKhoan->id);
+
+        return back()->with('success', "Đã gỡ tài khoản {$taiKhoan->email} khỏi học sinh {$hocSinh->ho_ten}.");
     }
 }

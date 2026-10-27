@@ -448,6 +448,11 @@
             Phụ huynh / học sinh tra cứu kết quả học tập
         </a>
     </div>
+    <div class="mt-2">
+        <a href="{{ route('phu-huynh.dang-ky') }}" style="color:#10b981;font-weight:600;text-decoration:none">
+            Phụ huynh đăng ký tài khoản
+        </a>
+    </div>
 </div>
                 </div>
 

@@ -18,8 +18,9 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'unique:users,email'],
+            'name'     => ['required', 'string', 'max:255', new \App\Rules\HoTen()],
+            'email'    => ['required', 'email:rfc', 'unique:users,email'],
+            'phone'    => ['nullable', new \App\Rules\SoDienThoai()],
             'password' => ['required', 'confirmed', Password::min(8)
                 ->mixedCase()
                 ->numbers()

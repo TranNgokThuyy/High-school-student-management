@@ -49,8 +49,8 @@ class PhanCongGiangDayController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'giao_vien_id' => 'required|exists:users,id',
-            'mon_hoc_id'   => 'required|exists:mon_hoc,id',
+            'giao_vien_id' => ['required', new \App\Rules\GiaoVien()],
+            'mon_hoc_id'   => 'required|exists:mon_hoc,id,is_active,1',
             'lop_hoc_ids'  => 'required|array|min:1',
             'lop_hoc_ids.*'=> 'exists:lop_hoc,id',
             'hoc_ky'       => 'required|in:1,2,Ca năm',

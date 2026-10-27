@@ -64,6 +64,15 @@ class HocSinh extends Model
         return $ma;
     }
 
+    // Tìm học sinh theo mã học sinh + mã tra cứu (chấp nhận chữ thường, khoảng trắng, dấu gạch)
+    public static function timTheoMaTraCuu(string $maHocSinh, string $maTraCuu): ?self
+    {
+        $hocSinh = self::with('lopHoc')->where('ma_hoc_sinh', strtoupper(trim($maHocSinh)))->first();
+        $maNhap = strtoupper(preg_replace('/[\s-]/', '', $maTraCuu));
+
+        return $hocSinh && $hocSinh->ma_tra_cuu && hash_equals($hocSinh->ma_tra_cuu, $maNhap) ? $hocSinh : null;
+    }
+
     // Mã tra cứu 8 ký tự, bỏ các ký tự dễ nhầm (0/O, 1/I/L) để phụ huynh dễ nhập
     public static function taoMaTraCuu(): string
     {
@@ -130,5 +139,15 @@ class HocSinh extends Model
     public function moTaNhatKy(): string
     {
         return "Học sinh {$this->ho_ten} ({$this->ma_hoc_sinh})";
+    }
+
+    public function taiKhoanPhuHuynh()
+    {
+        return $this->belongsToMany(User::class, 'phu_huynh_hoc_sinh')->withPivot('quan_he')->withTimestamps();
+    }
+
+    public function bienDong()
+    {
+        return $this->hasMany(BienDongHocSinh::class, 'hoc_sinh_id');
     }
 }

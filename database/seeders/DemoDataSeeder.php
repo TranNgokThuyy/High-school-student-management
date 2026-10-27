@@ -1,6 +1,7 @@
 <?php
 namespace Database\Seeders;
 
+use App\Models\DangKyMon;
 use App\Models\DiemDanh;
 use App\Models\DiemSo;
 use App\Models\HanhKiem;
@@ -58,8 +59,15 @@ class DemoDataSeeder extends Seeder
             // Học lực khác nhau: vài em giỏi, vài em yếu
             $nen = [9.0, 8.4, 7.2, 6.4, 5.2, 8.8, 4.6, 7.8, 6.9, 9.3, 5.8, 7.5][$i];
 
+            // GDPT 2018: 4 môn lựa chọn theo tổ hợp tự nhiên / xã hội
+            $toHop = $i % 2 === 0 ? ['LY', 'HOA', 'SINH', 'TIN'] : ['DIA', 'GDCD', 'TIN', 'CNGT'];
+            $monCuaHs = $monHoc->filter(fn ($m) => !$m->laMonTuChon() || in_array($m->ma_mon, $toHop, true));
+            foreach ($monCuaHs->filter(fn ($m) => $m->laMonTuChon()) as $mon) {
+                DangKyMon::firstOrCreate(['hoc_sinh_id' => $hs->id, 'mon_hoc_id' => $mon->id, 'nam_hoc' => $namTruoc]);
+            }
+
             foreach (['1', '2'] as $hk) {
-                foreach ($monHoc as $mon) {
+                foreach ($monCuaHs as $mon) {
                     $d = fn() => max(0, min(10, round($nen + mt_rand(-12, 12) / 10, 1)));
                     $diem = DiemSo::firstOrNew([
                         'hoc_sinh_id' => $hs->id, 'mon_hoc_id' => $mon->id,
@@ -83,7 +91,7 @@ class DemoDataSeeder extends Seeder
                 HanhKiem::updateOrCreate(
                     ['hoc_sinh_id' => $hs->id, 'lop_hoc_id' => $lopCu->id, 'hoc_ky' => $hk, 'nam_hoc' => $namTruoc],
                     [
-                        'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Trung bình'),
+                        'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Đạt'),
                         'so_buoi_hoc' => 90,
                         'so_buoi_vang_co_phep' => mt_rand(0, 3),
                         'so_buoi_vang_khong_phep' => $i === 6 ? 25 : mt_rand(0, 1),
@@ -95,7 +103,7 @@ class DemoDataSeeder extends Seeder
             HanhKiem::updateOrCreate(
                 ['hoc_sinh_id' => $hs->id, 'lop_hoc_id' => $lopCu->id, 'hoc_ky' => 'Ca năm', 'nam_hoc' => $namTruoc],
                 [
-                    'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Trung bình'),
+                    'xep_loai_hanh_kiem' => $nen >= 7 ? 'Tốt' : ($nen >= 5 ? 'Khá' : 'Đạt'),
                     'so_buoi_hoc' => 180,
                     'so_buoi_vang_co_phep' => 2,
                     'so_buoi_vang_khong_phep' => $i === 6 ? 50 : 1,
@@ -154,8 +162,16 @@ class DemoDataSeeder extends Seeder
             'name' => 'Lê Thu Hằng', 'password' => Hash::make('Ketoan@123456'), 'is_active' => true,
         ])->assignRole('ke-toan');
 
+        // Phụ huynh có 2 con ở lớp 11 năm nay
+        $phuHuynh = User::firstOrCreate(['email' => 'phuhuynh@school.com'], [
+            'name' => 'Phạm Thị Lan', 'password' => Hash::make('Phuhuynh@123'), 'is_active' => true,
+        ]);
+        $phuHuynh->assignRole('phu-huynh');
+        $phuHuynh->con()->syncWithoutDetaching($hs11->take(2)->mapWithKeys(fn ($hs) => [$hs->id => ['quan_he' => 'Mẹ']])->all());
+
         $this->command->info("✅ Đã tạo dữ liệu mẫu (lớp 10A1 năm {$namTruoc} có đủ điểm để thử Tổng kết & Lên lớp).");
         $this->command->info('GV bộ môn: nam.gvbm@school.com / Gvbm@123456');
         $this->command->info('Kế toán: ketoan@school.com / Ketoan@123456');
+        $this->command->info('Phụ huynh: phuhuynh@school.com / Phuhuynh@123');
     }
 }

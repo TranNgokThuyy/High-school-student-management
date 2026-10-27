@@ -25,6 +25,8 @@ class MonHocSeeder extends Seeder
 
         // Môn đánh giá bằng nhận xét theo Thông tư 22/2021
         $monNhanXet = ['TD', 'HDTN'];
+        // Môn lựa chọn theo chương trình GDPT 2018 (còn lại là môn bắt buộc)
+        $monLuaChon = ['LY', 'HOA', 'SINH', 'DIA', 'GDCD', 'TIN', 'CNGT'];
         $monHoc[] = ['HDTN', 'HĐ trải nghiệm, hướng nghiệp', 3, 'Tất cả'];
 
         foreach ($monHoc as [$ma, $ten, $tiet, $khoi]) {
@@ -35,6 +37,7 @@ class MonHocSeeder extends Seeder
                     'so_tiet_tuan' => $tiet,
                     'khoi'         => $khoi,
                     'hinh_thuc_danh_gia' => in_array($ma, $monNhanXet) ? 'Nhận xét' : 'Điểm số',
+                    'loai_mon'     => in_array($ma, $monLuaChon) ? 'Lựa chọn' : 'Bắt buộc',
                     'is_active'    => true,
                 ]
             );

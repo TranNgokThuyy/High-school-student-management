@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.pwa')
     <title>@yield('title') - {{ config('app.ten_truong') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -17,9 +18,10 @@
     <div class="dau-trang py-3 mb-4 no-print">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="fw-bold"><i class="bi bi-mortarboard-fill text-warning me-2"></i>{{ config('app.ten_truong') }}</div>
-            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Đăng nhập cán bộ</a>
+            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Đăng nhập</a>
         </div>
     </div>
     <div class="container pb-5">@yield('content')</div>
+    @include('partials.kiem-tra-form')
 </body>
 </html>

@@ -4,9 +4,14 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-arrow-up-circle text-success me-2"></i>Xét lên lớp & chuyển năm học</h4>
-    <a href="{{ route('tong-ket.index', ['lop_hoc_id' => $lop?->id]) }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-2"></i>Tổng kết
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('tong-ket.he', ['lop_hoc_id' => $lop?->id]) }}" class="btn btn-outline-warning">
+            <i class="bi bi-sun me-2"></i>Kiểm tra lại & rèn luyện hè
+        </a>
+        <a href="{{ route('tong-ket.index', ['lop_hoc_id' => $lop?->id]) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Tổng kết
+        </a>
+    </div>
 </div>
 
 <div class="card table-card mb-4">

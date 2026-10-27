@@ -107,13 +107,22 @@ class ThoiKhoaBieuController extends Controller
         $validated = $request->validate([
             'lop_hoc_id'   => 'required|exists:lop_hoc,id',
             'mon_hoc_id'   => 'required|exists:mon_hoc,id',
-            'giao_vien_id' => 'required|exists:users,id',
+            'giao_vien_id' => ['required', new \App\Rules\GiaoVien()],
             'thu'          => 'required|integer|between:2,8',
             'tiet_bat_dau' => 'required|integer|between:1,10',
-            'so_tiet'      => 'required|integer|between:1,5',
+            'so_tiet'      => ['required', 'integer', 'between:1,5', function ($attr, $value, $fail) use ($request) {
+                if ((int) $request->tiet_bat_dau + (int) $value - 1 > 10) {
+                    $fail('Tiết học kéo dài quá tiết 10 trong ngày.');
+                }
+            }],
             'phong_hoc'    => 'nullable|string|max:20',
             'hoc_ky'       => 'required|in:1,2',
-            'nam_hoc'      => 'required|string',
+            'nam_hoc'      => ['required', new \App\Rules\NamHoc(), function ($attr, $value, $fail) use ($request) {
+                $namHocLop = \App\Models\LopHoc::whereKey($request->lop_hoc_id)->value('nam_hoc');
+                if ($namHocLop && $namHocLop !== $value) {
+                    $fail("Lớp đã chọn thuộc năm học {$namHocLop}.");
+                }
+            }],
         ]);
 
         // Kiểm tra trùng lịch lớp

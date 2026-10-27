@@ -20,7 +20,9 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+            'ma_xac_thuc' => ['nullable', 'string', 'max:20'],
         ]);
+        unset($credentials['ma_xac_thuc']);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages(['email' => 'Email hoặc mật khẩu không chính xác.']);
@@ -29,6 +31,13 @@ class AuthController extends Controller
         if (! $request->user()->is_active) {
             Auth::logout();
             throw ValidationException::withMessages(['email' => 'Tài khoản đã bị vô hiệu hóa.']);
+        }
+
+        // Tài khoản bật xác thực 2 bước phải gửi kèm mã từ ứng dụng xác thực (hoặc mã khôi phục)
+        $user = $request->user();
+        if ($user->daBatHaiBuoc() && ! $user->kiemTraMaHaiBuoc((string) $request->input('ma_xac_thuc'))) {
+            Auth::guard('web')->logout();
+            throw ValidationException::withMessages(['ma_xac_thuc' => 'Cần mã xác thực 2 bước hợp lệ.']);
         }
 
         $request->session()->regenerate();

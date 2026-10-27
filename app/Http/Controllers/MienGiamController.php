@@ -32,7 +32,7 @@ class MienGiamController extends Controller
     {
         $validated = $request->validate([
             'hoc_sinh_id' => 'required|exists:hoc_sinh,id',
-            'nam_hoc'     => 'required|regex:/^\d{4}-\d{4}$/',
+            'nam_hoc'     => ['required', new \App\Rules\NamHoc()],
             'doi_tuong'   => 'required|string|max:150',
             'phan_tram'   => 'required|integer|min:1|max:100',
             'ghi_chu'     => 'nullable|string|max:255',

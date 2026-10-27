@@ -38,10 +38,10 @@ class TaiKhoanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users|max:100',
-            'phone' => 'nullable|string|max:15',
-            'password' => 'required|min:8|confirmed',
+            'name' => ['required', 'string', 'max:100', new \App\Rules\HoTen()],
+            'email' => 'required|email:rfc|unique:users|max:100',
+            'phone' => ['nullable', new \App\Rules\SoDienThoai()],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
             'role' => 'required|exists:roles,name',
             'is_active' => 'boolean',
         ], [
@@ -52,9 +52,11 @@ class TaiKhoanController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
             'is_active' => $request->boolean('is_active', true),
+            // Mật khẩu do quản trị viên đặt: người dùng phải đổi ở lần đăng nhập đầu
+            'phai_doi_mat_khau' => true,
         ]);
 
         $user->assignRole($validated['role']);
@@ -72,10 +74,10 @@ class TaiKhoanController extends Controller
     public function update(Request $request, User $taiKhoan)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => "required|email|unique:users,email,{$taiKhoan->id}|max:100",
-            'phone' => 'nullable|string|max:15',
-            'password' => 'nullable|min:8|confirmed',
+            'name' => ['required', 'string', 'max:100', new \App\Rules\HoTen()],
+            'email' => "required|email:rfc|unique:users,email,{$taiKhoan->id}|max:100",
+            'phone' => ['nullable', new \App\Rules\SoDienThoai()],
+            'password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
             'role' => 'required|exists:roles,name',
             'is_active' => 'boolean',
         ]);
@@ -96,12 +98,20 @@ class TaiKhoanController extends Controller
         $taiKhoan->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'phone' => $validated['phone'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        if ($validated['password']) {
-            $taiKhoan->update(['password' => Hash::make($validated['password'])]);
+        if (!empty($validated['password'])) {
+            $taiKhoan->update(['password' => Hash::make($validated['password']), 'phai_doi_mat_khau' => true]);
+        }
+
+        // Người dùng mất điện thoại: quản trị viên gỡ xác thực 2 bước để họ thiết lập lại
+        if ($request->boolean('dat_lai_2fa') && $taiKhoan->id !== auth()->id()) {
+            $taiKhoan->forceFill([
+                'two_factor_secret' => null, 'two_factor_recovery_codes' => null,
+                'two_factor_confirmed_at' => null, 'two_factor_last_step' => null,
+            ])->save();
         }
 
         // Cập nhật role

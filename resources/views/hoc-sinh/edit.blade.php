@@ -39,7 +39,7 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Ngày sinh <span class="text-danger">*</span></label>
-                            <input type="date" name="ngay_sinh"
+                            <input type="date" name="ngay_sinh" min="{{ today()->subYears(30)->toDateString() }}" max="{{ today()->subYears(10)->toDateString() }}"
                                    class="form-control @error('ngay_sinh') is-invalid @enderror"
                                    value="{{ old('ngay_sinh', $hocSinh->ngay_sinh->format('Y-m-d')) }}" required>
                             @error('ngay_sinh')<div class="invalid-feedback">{{ $message }}</div>@enderror

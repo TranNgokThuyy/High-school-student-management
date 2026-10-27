@@ -1,9 +1,12 @@
 <?php
 namespace App\Services;
 
+use App\Models\DangKyMon;
 use App\Models\DiemDanh;
 use App\Models\DiemSo;
 use App\Models\HanhKiem;
+use App\Models\KiemTraLai;
+use App\Models\RenLuyenHe;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
 use App\Models\MonHoc;
@@ -46,13 +49,15 @@ class TongKetService
     }
 
     /**
-     * Quy đổi xếp loại hạnh kiểm cũ sang mức rèn luyện TT22.
+     * Mức rèn luyện TT22; vẫn nhận giá trị thang cũ (Trung bình / Yếu) nếu còn sót dữ liệu.
      */
     public static function mucRenLuyen(?string $hanhKiem): ?string
     {
         return match ($hanhKiem) {
             'Tốt'        => 'Tốt',
             'Khá'        => 'Khá',
+            'Đạt'        => 'Đạt',
+            'Chưa đạt'   => 'Chưa đạt',
             'Trung bình' => 'Đạt',
             'Yếu'        => 'Chưa đạt',
             default      => null,
@@ -76,7 +81,7 @@ class TongKetService
     /**
      * Xét lên lớp cuối năm (Điều 12, 13 TT22).
      */
-    public static function xetLenLop(?string $hocTap, ?string $renLuyen, int $soBuoiNghi, string $khoi): array
+    public static function xetLenLop(?string $hocTap, ?string $renLuyen, int $soBuoiNghi, string $khoi, bool $sauHe = false): array
     {
         if (is_null($hocTap) || is_null($renLuyen)) {
             return ['dat' => false, 'ket_qua' => 'Chưa đủ dữ liệu', 'ly_do' => []];
@@ -96,14 +101,15 @@ class TongKetService
         if (empty($lyDo)) {
             return [
                 'dat'     => true,
-                'ket_qua' => $khoi === '12' ? 'Hoàn thành chương trình' : 'Lên lớp',
+                'ket_qua' => ($khoi === '12' ? 'Hoàn thành chương trình' : 'Lên lớp') . ($sauHe ? ' (sau hè)' : ''),
                 'ly_do'   => [],
             ];
         }
 
         return [
             'dat'     => false,
-            'ket_qua' => $soBuoiNghi > self::SO_BUOI_NGHI_TOI_DA ? 'Ở lại lớp' : 'Chưa được lên lớp',
+            // Sau kiểm tra lại / rèn luyện hè mà vẫn chưa đạt thì ở lại lớp (TT22 Điều 12, 13)
+            'ket_qua' => $sauHe || $soBuoiNghi > self::SO_BUOI_NGHI_TOI_DA ? 'Ở lại lớp' : 'Chưa được lên lớp',
             'ly_do'   => $lyDo,
         ];
     }
@@ -140,12 +146,33 @@ class TongKetService
 
         $diemTheoHs = $diemSo->groupBy('hoc_sinh_id');
 
-        $ketQua = $hocSinh->map(function (HocSinh $hs) use ($monHoc, $diemTheoHs, $hocKy, $hanhKiem, $diemDanh, $lop) {
-            $diemCuaHs = $diemTheoHs->get($hs->id, collect());
+        // Môn lựa chọn / chuyên đề (GDPT 2018): học sinh chỉ học môn đã đăng ký
+        $dangKy = DangKyMon::where('nam_hoc', $lop->nam_hoc)
+            ->whereIn('hoc_sinh_id', $hocSinh->pluck('id'))
+            ->get(['hoc_sinh_id', 'mon_hoc_id'])
+            ->groupBy('hoc_sinh_id')
+            ->map(fn ($ds) => $ds->pluck('mon_hoc_id')->map(fn ($id) => (int) $id)->all());
 
+        // Kết quả kiểm tra lại / rèn luyện hè (chỉ dùng khi tổng kết cả năm)
+        $kiemTraLai = $hocKy === 'Ca năm'
+            ? KiemTraLai::where('lop_hoc_id', $lop->id)->where('nam_hoc', $lop->nam_hoc)->get()->groupBy('hoc_sinh_id')
+            : collect();
+        $renLuyenHe = $hocKy === 'Ca năm'
+            ? RenLuyenHe::where('lop_hoc_id', $lop->id)->where('nam_hoc', $lop->nam_hoc)->get()->keyBy('hoc_sinh_id')
+            : collect();
+
+        $ketQua = $hocSinh->map(function (HocSinh $hs) use ($monHoc, $diemTheoHs, $hocKy, $hanhKiem, $diemDanh, $lop, $dangKy, $kiemTraLai, $renLuyenHe) {
+            $diemCuaHs = $diemTheoHs->get($hs->id, collect());
+            $monDaDangKy = $dangKy->get($hs->id, []);
+
+            // diem_mon chỉ có khóa cho các môn học sinh học; môn tự chọn không đăng ký (và không có điểm) bị bỏ qua
             $diemMon = [];
             foreach ($monHoc as $mon) {
-                $diemMon[$mon->id] = $this->ketQuaMon($diemCuaHs->where('mon_hoc_id', $mon->id), $hocKy, $mon);
+                $diemCuaMon = $diemCuaHs->where('mon_hoc_id', $mon->id);
+                if ($mon->laMonTuChon() && !in_array($mon->id, $monDaDangKy, true) && $diemCuaMon->isEmpty()) {
+                    continue;
+                }
+                $diemMon[$mon->id] = $this->ketQuaMon($diemCuaMon, $hocKy, $mon);
             }
 
             $duDiem   = !in_array(null, $diemMon, true) && count($diemMon) > 0;
@@ -161,6 +188,18 @@ class TongKetService
 
             $diemCoGiaTri = array_filter($diemMon, fn ($d) => !is_null($d) && !is_string($d));
 
+            // Điểm kiểm tra lại thay ĐTB môn cả năm để xếp loại lại; kết quả rèn luyện hè thay rèn luyện cả năm
+            $ktl = $kiemTraLai->get($hs->id, collect())->filter(fn ($k) => !is_null($k->ketQua()));
+            $diemSauKtl = $diemMon;
+            foreach ($ktl as $k) {
+                if (array_key_exists($k->mon_hoc_id, $diemSauKtl)) {
+                    $diemSauKtl[$k->mon_hoc_id] = $k->ketQua();
+                }
+            }
+            $hocTapSauKtl = $ktl->isNotEmpty() && $duDiem ? self::xepLoaiHocTap($diemSauKtl) : null;
+            $renLuyenSauHe = $renLuyenHe->get($hs->id)?->ket_qua;
+            $sauHe = $hocTapSauKtl !== null || $renLuyenSauHe !== null;
+
             return [
                 'hoc_sinh'   => $hs,
                 'diem_mon'   => $diemMon,
@@ -172,8 +211,11 @@ class TongKetService
                 'so_buoi_nghi' => $soBuoiNghi,
                 'danh_hieu'  => self::danhHieu($hocTap, $renLuyen, $diemMon),
                 'len_lop'    => $hocKy === 'Ca năm'
-                    ? self::xetLenLop($hocTap, $renLuyen, $soBuoiNghi, $lop->khoi)
+                    ? self::xetLenLop($hocTapSauKtl ?? $hocTap, $renLuyenSauHe ?? $renLuyen, $soBuoiNghi, $lop->khoi, $sauHe)
                     : null,
+                'hoc_tap_sau_ktl'  => $hocTapSauKtl,
+                'ren_luyen_sau_he' => $renLuyenSauHe,
+                'kiem_tra_lai'     => $ktl->mapWithKeys(fn ($k) => [$k->mon_hoc_id => $k->ketQua()])->all(),
                 'dang_o_lop' => $hs->lop_hoc_id == $lop->id && !$hs->trashed(),
             ];
         });
@@ -203,6 +245,11 @@ class TongKetService
             $monHoc = $monHoc->merge($tongKet['mon_hoc'])->unique('id');
             $theoKy[$hocKy] = $tongKet['ket_qua']->first(fn ($r) => $r['hoc_sinh']->id === $hocSinh->id);
         }
+
+        // Chỉ giữ các môn học sinh này học (bỏ môn lựa chọn không đăng ký)
+        $monHoc = $monHoc->filter(fn ($mon) => collect($theoKy)->contains(
+            fn ($r) => $r && array_key_exists($mon->id, $r['diem_mon'])
+        ));
 
         return ['lop' => $lop, 'nam_hoc' => $namHoc, 'mon_hoc' => $monHoc->sortBy('ten_mon')->values(), 'theo_ky' => $theoKy];
     }

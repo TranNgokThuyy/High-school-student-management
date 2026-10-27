@@ -70,7 +70,10 @@
                             {{ $mon->ma_mon }}
                         </span>
                     </td>
-                    <td class="fw-semibold">{{ $mon->ten_mon }}</td>
+                    <td class="fw-semibold">{{ $mon->ten_mon }}
+                        @if($mon->loai_mon !== 'Bắt buộc')<span class="badge bg-secondary ms-1">{{ $mon->loai_mon }}</span>@endif
+                        @if($mon->laMonNhanXet())<span class="badge bg-info ms-1">Nhận xét</span>@endif
+                    </td>
                     <td class="text-center">
                         @php
                             $khoiColors = ['10'=>'primary','11'=>'success','12'=>'warning','Tất cả'=>'info'];

@@ -13,21 +13,21 @@ class ZaloZnsGateway
 {
     public const URL = 'https://business.openapi.zalo.me/message/template';
 
-    public function __construct(private ?string $accessToken, private ?string $templateId) {}
+    public function __construct(private ZaloTokenService $token, private ?string $templateId) {}
 
     public function daCauHinh(): bool
     {
-        return filled($this->accessToken) && filled($this->templateId);
+        return filled($this->templateId) && $this->token->coToken();
     }
 
     public function gui(string $soDienThoai, array $thamSo, string $maTheoDoi): void
     {
         if (!$this->daCauHinh()) {
-            throw new RuntimeException('Chưa cấu hình ZALO_ZNS_ACCESS_TOKEN / ZALO_ZNS_TEMPLATE_ID.');
+            throw new RuntimeException('Chưa cấu hình token Zalo OA / ZALO_ZNS_TEMPLATE_ID.');
         }
 
         $ketQua = Http::timeout(15)
-            ->withHeaders(['access_token' => $this->accessToken])
+            ->withHeaders(['access_token' => $this->token->accessToken()])
             ->post(self::URL, [
                 'phone'         => self::chuanHoaSoDienThoai($soDienThoai),
                 'template_id'   => $this->templateId,

@@ -23,26 +23,63 @@ use App\Http\Controllers\MaTraCuuController;
 use App\Http\Controllers\NhatKyController;
 use App\Http\Controllers\SaoLuuController;
 use App\Http\Controllers\SoDiemController;
+use App\Http\Controllers\DangKyMonController;
+use App\Http\Controllers\NhapDiemExcelController;
+use App\Http\Controllers\BienDongController;
+use App\Http\Controllers\ThongKeController;
+use App\Http\Controllers\KyThiController;
+use App\Http\Controllers\GiaoVienController;
+use App\Http\Controllers\PhuHuynhController;
+use App\Http\Controllers\BaoMatController;
+use App\Http\Controllers\ZaloOaController;
+use App\Http\Controllers\Auth\XacThucHaiBuocController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
 // Trang chủ redirect
 Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('login');
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route(auth()->user()->laPhuHuynh() ? 'phu-huynh.index' : 'dashboard');
 });
 
-// Routes yêu cầu đăng nhập và tài khoản active
+// Dùng chung cho cán bộ và phụ huynh
 Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
-
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Profile người dùng
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::view('/doi-mat-khau', 'doi-mat-khau')->name('doi-mat-khau');
+
+    // Xác thực 2 bước
+    Route::get('/bao-mat',                 [BaoMatController::class, 'index'])->name('bao-mat.index');
+    Route::post('/bao-mat',                [BaoMatController::class, 'bat'])->name('bao-mat.bat')->middleware('throttle:10,1');
+    Route::post('/bao-mat/ma-khoi-phuc',   [BaoMatController::class, 'taoLaiMaKhoiPhuc'])->name('bao-mat.ma-khoi-phuc');
+    Route::delete('/bao-mat',              [BaoMatController::class, 'tat'])->name('bao-mat.tat');
+});
+
+// Bước nhập mã xác thực khi đăng nhập
+Route::middleware('guest')->group(function () {
+    Route::get('/xac-thuc-2-buoc', [XacThucHaiBuocController::class, 'create'])->name('xac-thuc-hai-buoc');
+    Route::post('/xac-thuc-2-buoc', [XacThucHaiBuocController::class, 'store'])->middleware('throttle:5,1');
+});
+
+// ===== CỔNG PHỤ HUYNH =====
+Route::get('/phu-huynh/dang-ky', [PhuHuynhController::class, 'dangKyForm'])->name('phu-huynh.dang-ky')->middleware('guest');
+Route::post('/phu-huynh/dang-ky', [PhuHuynhController::class, 'dangKy'])->middleware(['guest', 'throttle:5,1']);
+Route::prefix('phu-huynh')->name('phu-huynh.')->middleware(['auth', 'check.active', 'role:phu-huynh'])->group(function () {
+    Route::get('/',                      [PhuHuynhController::class, 'index'])->name('index');
+    Route::post('/con',                  [PhuHuynhController::class, 'themCon'])->name('them-con')->middleware('throttle:5,1');
+    Route::get('/con/{hocSinh}',         [PhuHuynhController::class, 'show'])->name('show');
+    Route::delete('/con/{hocSinh}',      [PhuHuynhController::class, 'boLienKet'])->name('bo-lien-ket');
+});
+
+// Routes của cán bộ nhà trường (yêu cầu đăng nhập, tài khoản active, không phải phụ huynh)
+Route::middleware(['auth', 'verified', 'check.active', 'can-bo'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ===== QUẢN LÝ HỌC SINH (phân quyền trong controller) =====
     Route::resource('hoc-sinh', HocSinhController::class);
@@ -77,6 +114,8 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
         Route::get('/', [DiemSoController::class, 'bangDiem'])->name('bang-diem')->middleware('permission:xem-diem');
         Route::get('/nhap-diem', [DiemSoController::class, 'nhapDiem'])->name('nhap-diem')->middleware('permission:them-diem');
         Route::post('/luu-diem', [DiemSoController::class, 'luuDiem'])->name('luu-diem')->middleware('permission:them-diem');
+        Route::get('/mau-excel', [NhapDiemExcelController::class, 'taiMau'])->name('mau-excel')->middleware('permission:them-diem');
+        Route::post('/nhap-excel', [NhapDiemExcelController::class, 'taiLen'])->name('nhap-excel')->middleware('permission:them-diem');
     });
 
     // ===== HẠNH KIỂM =====
@@ -90,9 +129,12 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     // ===== BÁO CÁO =====
     Route::prefix('bao-cao')->name('bao-cao.')->group(function () {
         Route::get('/', [BaoCaoController::class, 'index'])->name('index')->middleware('permission:xem-bao-cao');
+        Route::get('/thong-ke', [ThongKeController::class, 'index'])->name('thong-ke')->middleware('permission:xem-bao-cao');
         Route::get('/diem-lop', [BaoCaoController::class, 'baoCaoDiemLop'])->name('diem-lop')->middleware('permission:xem-bao-cao');
         Route::get('/xuat-pdf', [BaoCaoController::class, 'xuatPDF'])->name('xuat-pdf')->middleware('permission:xuat-bao-cao');
         Route::get('/xuat-excel', [BaoCaoController::class, 'xuatExcel'])->name('xuat-excel')->middleware('permission:xuat-bao-cao');
+        // Chứa mã định danh, địa chỉ... nên chỉ quản trị viên
+        Route::get('/xuat-du-lieu', [BaoCaoController::class, 'xuatDuLieu'])->name('xuat-du-lieu')->middleware('role:quan-tri-vien');
     });
 
     // ===== QUẢN LÝ TÀI KHOẢN (Chỉ admin) =====
@@ -137,6 +179,8 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
     Route::prefix('tong-ket')->name('tong-ket.')->group(function () {
         Route::get('/',         [TongKetController::class, 'index'])->name('index')->middleware('permission:xem-tong-ket');
         Route::post('/gui-ket-qua', [TongKetController::class, 'guiKetQua'])->name('gui-ket-qua')->middleware(['permission:xem-tong-ket', 'permission:gui-tin-phu-huynh']);
+        Route::get('/he',       [TongKetController::class, 'he'])->name('he')->middleware('permission:xet-len-lop');
+        Route::post('/he',      [TongKetController::class, 'luuHe'])->name('luu-he')->middleware('permission:xet-len-lop');
         Route::get('/len-lop',  [TongKetController::class, 'lenLop'])->name('len-lop')->middleware('permission:xet-len-lop');
         Route::post('/len-lop', [TongKetController::class, 'luuLenLop'])->name('luu-len-lop')->middleware('permission:xet-len-lop');
     });
@@ -167,12 +211,48 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
             Route::get('/{tenTep}/tai-ve',  [SaoLuuController::class, 'download'])->name('download');
             Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
         });
+
+        Route::get('/zalo-oa',            [ZaloOaController::class, 'index'])->name('zalo-oa.index');
+        Route::post('/zalo-oa',           [ZaloOaController::class, 'luu'])->name('zalo-oa.luu');
+        Route::post('/zalo-oa/lam-moi',   [ZaloOaController::class, 'lamMoi'])->name('zalo-oa.lam-moi');
     });
+
+    // ===== HỒ SƠ GIÁO VIÊN & GIỜ DẠY =====
+    Route::middleware('permission:quan-ly-giao-vien')->group(function () {
+        Route::get('/giao-vien', [GiaoVienController::class, 'index'])->name('giao-vien.index');
+        Route::get('/giao-vien/{giaoVien}/ho-so', [GiaoVienController::class, 'edit'])->name('giao-vien.edit');
+        Route::put('/giao-vien/{giaoVien}/ho-so', [GiaoVienController::class, 'update'])->name('giao-vien.update');
+    });
+
+    // ===== KỲ THI: LỊCH THI, PHÒNG THI, SỐ BÁO DANH =====
+    Route::prefix('ky-thi')->name('ky-thi.')->middleware('permission:quan-ly-ky-thi')->group(function () {
+        Route::get('/',                          [KyThiController::class, 'index'])->name('index');
+        Route::post('/',                         [KyThiController::class, 'store'])->name('store');
+        Route::get('/{kyThi}',                   [KyThiController::class, 'show'])->name('show');
+        Route::delete('/{kyThi}',                [KyThiController::class, 'destroy'])->name('destroy');
+        Route::post('/{kyThi}/lich',             [KyThiController::class, 'themLich'])->name('them-lich');
+        Route::delete('/{kyThi}/lich/{lichThi}', [KyThiController::class, 'xoaLich'])->name('xoa-lich');
+        Route::post('/{kyThi}/xep-phong',        [KyThiController::class, 'xepPhong'])->name('xep-phong');
+        Route::get('/{kyThi}/in',                [KyThiController::class, 'inDanhSach'])->name('in');
+    });
+
+    // ===== BIẾN ĐỘNG HỌC SINH: CHUYỂN TRƯỜNG / THÔI HỌC =====
+    Route::middleware('permission:quan-ly-bien-dong')->group(function () {
+        Route::get('/bien-dong', [BienDongController::class, 'index'])->name('bien-dong.index');
+        Route::get('/hoc-sinh/{hocSinh}/bien-dong', [BienDongController::class, 'create'])->name('bien-dong.create');
+        Route::post('/hoc-sinh/{hocSinh}/bien-dong', [BienDongController::class, 'store'])->name('bien-dong.store');
+    });
+
+    // ===== ĐĂNG KÝ MÔN LỰA CHỌN (GDPT 2018) =====
+    Route::get('/lop-hoc/{lopHoc}/mon-lua-chon', [DangKyMonController::class, 'edit'])->name('dang-ky-mon.edit')->middleware('permission:sua-hoc-sinh');
+    Route::put('/lop-hoc/{lopHoc}/mon-lua-chon', [DangKyMonController::class, 'update'])->name('dang-ky-mon.update')->middleware('permission:sua-hoc-sinh');
 
     // ===== MÃ TRA CỨU PHỤ HUYNH =====
     Route::get('/lop-hoc/{lopHoc}/phieu-tra-cuu', [MaTraCuuController::class, 'inPhieuLop'])->name('ma-tra-cuu.phieu-lop')
         ->middleware('permission:xem-hoc-sinh');
     Route::post('/hoc-sinh/{hocSinh}/cap-lai-ma-tra-cuu', [MaTraCuuController::class, 'capLai'])->name('ma-tra-cuu.cap-lai')
+        ->middleware('permission:sua-hoc-sinh');
+    Route::delete('/hoc-sinh/{hocSinh}/tai-khoan-phu-huynh/{taiKhoan}', [MaTraCuuController::class, 'goTaiKhoan'])->name('ma-tra-cuu.go-tai-khoan')
         ->middleware('permission:sua-hoc-sinh');
 
     // ===== TIN NHẮN PHỤ HUYNH =====

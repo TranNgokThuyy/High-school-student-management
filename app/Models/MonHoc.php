@@ -11,11 +11,20 @@ class MonHoc extends Model
     protected $table = 'mon_hoc';
 
     protected $fillable = [
-        'ma_mon', 'ten_mon', 'so_tiet_tuan', 'khoi', 'hinh_thuc_danh_gia', 'is_active',
+        'ma_mon', 'ten_mon', 'so_tiet_tuan', 'khoi', 'loai_mon', 'hinh_thuc_danh_gia', 'is_active',
     ];
 
     public const DIEM_SO = 'Điểm số';
     public const NHAN_XET = 'Nhận xét';
+
+    // Loại môn theo chương trình GDPT 2018
+    public const LOAI_MON = ['Bắt buộc', 'Lựa chọn', 'Chuyên đề'];
+
+    // Môn lựa chọn / chuyên đề: chỉ học sinh đã đăng ký mới học
+    public function laMonTuChon(): bool
+    {
+        return in_array($this->loai_mon, ['Lựa chọn', 'Chuyên đề'], true);
+    }
 
     public function laMonNhanXet(): bool
     {

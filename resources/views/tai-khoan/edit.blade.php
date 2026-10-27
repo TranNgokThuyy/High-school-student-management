@@ -156,6 +156,17 @@
                             @endif
                         </div>
 
+                        @if($taiKhoan->daBatHaiBuoc() && $taiKhoan->id !== auth()->id())
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Xác thực 2 bước</label>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="dat_lai_2fa" id="dat_lai_2fa" value="1">
+                                <label class="form-check-label" for="dat_lai_2fa">Gỡ xác thực 2 bước (người dùng mất điện thoại)</label>
+                            </div>
+                        </div>
+                        @endif
+                        <div class="col-12"><small class="text-muted">Khi đặt mật khẩu mới, người dùng sẽ phải đổi mật khẩu ở lần đăng nhập kế tiếp.</small></div>
+
                         <div class="col-12 mt-2">
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-warning">

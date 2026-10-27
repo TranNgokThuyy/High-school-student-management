@@ -96,6 +96,16 @@
                             </div>
 
                         <div class="col-md-6">
+                            <label class="form-label fw-semibold">Loại môn (GDPT 2018) <span class="text-danger">*</span></label>
+                            <select name="loai_mon" class="form-select">
+                                @foreach(\App\Models\MonHoc::LOAI_MON as $loai)
+                                    <option value="{{ $loai }}" {{ old('loai_mon', $monHoc->loai_mon) == $loai ? 'selected' : '' }}>{{ $loai }}</option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">Môn lựa chọn / chuyên đề: chỉ học sinh đã đăng ký mới được nhập điểm và tính tổng kết.</div>
+                        </div>
+
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Hình thức đánh giá <span class="text-danger">*</span></label>
                             <select name="hinh_thuc_danh_gia" class="form-select">
                                 <option value="Điểm số" {{ old('hinh_thuc_danh_gia', $monHoc->hinh_thuc_danh_gia) == 'Điểm số' ? 'selected' : '' }}>Điểm số (thang 10)</option>

@@ -19,6 +19,21 @@
 
 <form method="POST" action="{{ route('hoc-sinh.store') }}" enctype="multipart/form-data">
     @csrf
+    @php $chuyenDen = old('chuyen_den', request('chuyen_den')); @endphp
+    <div class="card table-card mb-4">
+        <div class="card-body">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="chuyen_den" value="1" id="chuyenDen" {{ $chuyenDen ? 'checked' : '' }}
+                       onchange="document.getElementById('khungChuyenDen').classList.toggle('d-none', !this.checked)">
+                <label class="form-check-label fw-semibold" for="chuyenDen">Học sinh chuyển đến từ trường khác</label>
+            </div>
+            <div id="khungChuyenDen" class="row g-3 mt-1 {{ $chuyenDen ? '' : 'd-none' }}">
+                <div class="col-md-6"><label class="form-label">Trường chuyển đi</label><input type="text" name="truong_cu" class="form-control" value="{{ old('truong_cu') }}" maxlength="200"></div>
+                <div class="col-md-3"><label class="form-label">Số quyết định</label><input type="text" name="so_quyet_dinh_den" class="form-control" value="{{ old('so_quyet_dinh_den') }}" maxlength="50"></div>
+                <div class="col-md-3"><label class="form-label">Ngày tiếp nhận</label><input type="date" name="ngay_chuyen_den" class="form-control" value="{{ old('ngay_chuyen_den', today()->toDateString()) }}" max="{{ today()->toDateString() }}"></div>
+            </div>
+        </div>
+    </div>
     <div class="row g-4">
         {{-- Thông tin cơ bản --}}
         <div class="col-lg-8">
@@ -37,7 +52,7 @@
                         
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Ngày sinh <span class="text-danger">*</span></label>
-                            <input type="date" name="ngay_sinh" class="form-control @error('ngay_sinh') is-invalid @enderror" 
+                            <input type="date" name="ngay_sinh" min="{{ today()->subYears(30)->toDateString() }}" max="{{ today()->subYears(10)->toDateString() }}" class="form-control @error('ngay_sinh') is-invalid @enderror" 
                                    value="{{ old('ngay_sinh') }}" required>
                             @error('ngay_sinh')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

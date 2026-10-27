@@ -51,7 +51,8 @@ class LopHoc extends Model
 
     public function capNhatSiSo(): void
     {
-        $this->update(['si_so' => $this->hocSinh()->count()]);
+        // Sĩ số chỉ tính học sinh đang học (không tính chuyển trường / thôi học)
+        $this->update(['si_so' => $this->hocSinh()->where('trang_thai', 'Đang học')->count()]);
     }
 
     public function moTaNhatKy(): string

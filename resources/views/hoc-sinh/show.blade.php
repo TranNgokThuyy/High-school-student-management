@@ -33,6 +33,11 @@
             <i class="bi bi-cash-coin me-2"></i>Học phí
         </a>
         @endcan
+        @can('quan-ly-bien-dong')
+        <a href="{{ route('bien-dong.create', $hocSinh) }}" class="btn btn-outline-warning" title="Chuyển trường / thôi học / học lại">
+            <i class="bi bi-arrow-left-right"></i>
+        </a>
+        @endcan
         @can('xem-nhat-ky')
         <a href="{{ route('nhat-ky.index', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-secondary" title="Lịch sử thay đổi điểm, hồ sơ, học phí">
             <i class="bi bi-clock-history"></i>
@@ -81,6 +86,22 @@
                     </form>
                     @endcan
                 </div>
+                @if($hocSinh->taiKhoanPhuHuynh->isNotEmpty())
+                <div class="small text-start border rounded-2 p-2 mb-2">
+                    <div class="text-muted mb-1">Tài khoản phụ huynh đã liên kết:</div>
+                    @foreach($hocSinh->taiKhoanPhuHuynh as $ph)
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <span>{{ $ph->name }} ({{ $ph->pivot->quan_he }})<br><span class="text-muted">{{ $ph->email }}</span></span>
+                        @can('sua-hoc-sinh')
+                        <form method="POST" action="{{ route('ma-tra-cuu.go-tai-khoan', [$hocSinh, $ph]) }}" onsubmit="return confirm('Gỡ tài khoản này khỏi học sinh?')">
+                            @csrf @method('DELETE')
+                            <button class="btn btn-link btn-sm text-danger p-0" title="Gỡ liên kết"><i class="bi bi-x-circle"></i></button>
+                        </form>
+                        @endcan
+                    </div>
+                    @endforeach
+                </div>
+                @endif
                 @endif
 
                 @php
@@ -352,7 +373,7 @@
             <div class="card-header bg-white py-3">
                 <h6 class="fw-semibold mb-0">
                     <i class="bi bi-clipboard-check text-warning me-2"></i>
-                    Hạnh kiểm & Chuyên cần
+                    Rèn luyện & Chuyên cần
                 </h6>
             </div>
             <div class="table-responsive">
@@ -380,12 +401,7 @@
                             <td class="text-center">
                                 @if($hk->xep_loai_hanh_kiem)
                                     @php
-                                        $hkColors = [
-                                            'Tốt'        => 'success',
-                                            'Khá'        => 'primary',
-                                            'Trung bình' => 'warning',
-                                            'Yếu'        => 'danger',
-                                        ];
+                                        $hkColors = \App\Models\HanhKiem::MAU;
                                         $hkMau = $hkColors[$hk->xep_loai_hanh_kiem] ?? 'secondary';
                                     @endphp
                                     <span class="badge bg-{{ $hkMau }}">
@@ -421,7 +437,7 @@
             <div class="card-header bg-white py-3">
                 <h6 class="fw-semibold mb-0">
                     <i class="bi bi-clipboard-check text-warning me-2"></i>
-                    Hạnh kiểm & Chuyên cần
+                    Rèn luyện & Chuyên cần
                 </h6>
             </div>
             <div class="card-body text-center py-4 text-muted">

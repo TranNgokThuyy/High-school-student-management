@@ -13,8 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function ($middleware) {
+        $middleware->appendToGroup('web', \App\Http\Middleware\YeuCauBaoMat::class);
+        $middleware->append(\App\Http\Middleware\ChuanHoaSo::class);
         $middleware->alias([
             'check.active' => CheckActiveUser::class,
+            'can-bo' => \App\Http\Middleware\ChanPhuHuynh::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
