@@ -36,6 +36,9 @@
         </form>
         @endcan
         @endif
+        @if($lop)
+        <a href="{{ route('lop-hoc.so-diem', $lop) }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Sổ điểm</a>
+        @endif
         <button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer me-2"></i>In</button>
     </div>
 </div>

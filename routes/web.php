@@ -22,6 +22,7 @@ use App\Http\Controllers\TinNhanPhuHuynhController;
 use App\Http\Controllers\MaTraCuuController;
 use App\Http\Controllers\NhatKyController;
 use App\Http\Controllers\SaoLuuController;
+use App\Http\Controllers\SoDiemController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -150,6 +151,10 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
 
     // ===== PHIẾU ĐIỂM CÁ NHÂN =====
     Route::get('/hoc-sinh/{hocSinh}/phieu-diem', [PhieuDiemController::class, 'show'])->name('hoc-sinh.phieu-diem')
+        ->middleware('permission:xem-diem');
+    Route::get('/hoc-sinh/{hocSinh}/hoc-ba', [PhieuDiemController::class, 'hocBa'])->name('hoc-sinh.hoc-ba')
+        ->middleware('permission:xem-diem');
+    Route::get('/lop-hoc/{lopHoc}/so-diem', [SoDiemController::class, 'xuat'])->name('lop-hoc.so-diem')
         ->middleware('permission:xem-diem');
 
     // ===== NHẬT KÝ THAO TÁC & SAO LƯU (chỉ quản trị viên) =====

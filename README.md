@@ -48,7 +48,9 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
 
 ## Chức năng
 
-- **Học sinh**: hồ sơ, ảnh thẻ, xem điểm, hạnh kiểm, khen thưởng - kỷ luật, in phiếu điểm cá nhân (PDF).
+- **Học sinh**: hồ sơ, ảnh thẻ, xem điểm, hạnh kiểm, khen thưởng - kỷ luật, in phiếu điểm cá nhân (PDF),
+  **học bạ nhiều năm** (PDF, mỗi năm học một trang).
+- **Sổ điểm điện tử theo lớp** (Excel): trang tổng hợp xếp loại + mỗi môn một trang tính với điểm từng lần đánh giá HK1, HK2, cả năm.
 - **Nhập học sinh từ Excel** (.xlsx, .xls, .csv): nhận tiêu đề tiếng Việt ("Họ và tên", "Ngày sinh", "Lớp"...),
   ô ngày của Excel, giữ số 0 đầu SĐT/CCCD, bỏ qua học sinh đã có, báo lỗi theo từng dòng; file mẫu .xlsx.
 - **Lớp học, Môn học, Thời khóa biểu** (chống trùng lịch lớp / giáo viên).

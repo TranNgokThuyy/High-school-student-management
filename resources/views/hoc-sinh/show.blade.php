@@ -19,6 +19,9 @@
         <a href="{{ route('hoc-sinh.phieu-diem', $hocSinh) }}" target="_blank" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-pdf me-2"></i>Phiếu điểm
         </a>
+        <a href="{{ route('hoc-sinh.hoc-ba', $hocSinh) }}" target="_blank" class="btn btn-outline-primary">
+            <i class="bi bi-journal-bookmark me-2"></i>Học bạ
+        </a>
         @endcan
         @can('gui-tin-phu-huynh')
         <a href="{{ route('tin-nhan.create', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-info">
