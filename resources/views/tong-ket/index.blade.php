@@ -32,6 +32,7 @@
             <input type="hidden" name="lop_hoc_id" value="{{ $lop->id }}">
             <input type="hidden" name="hoc_ky" value="{{ $hocKy }}">
             <input type="hidden" name="kenh[]" value="email">
+            <input type="hidden" name="kenh[]" value="zalo">
             <button class="btn btn-outline-primary"><i class="bi bi-send me-2"></i>Gửi kết quả cho phụ huynh</button>
         </form>
         @endcan

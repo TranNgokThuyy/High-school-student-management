@@ -80,7 +80,7 @@ class HocPhiController extends Controller
         $request->validate([
             'lop_hoc_id' => 'required|exists:lop_hoc,id',
             'kenh'       => 'nullable|array',
-            'kenh.*'     => 'in:email,sms',
+            'kenh.*'     => 'in:email,sms,zalo',
         ]);
 
         $lop = LopHoc::findOrFail($request->lop_hoc_id);

@@ -126,7 +126,7 @@
             @can('gui-tin-phu-huynh')
             <div class="form-check mb-0">
                 <input class="form-check-input" type="checkbox" name="bao_phu_huynh" value="1" id="baoPhuHuynh" checked>
-                <label class="form-check-label small" for="baoPhuHuynh">Báo phụ huynh HS vắng không phép</label>
+                <label class="form-check-label small" for="baoPhuHuynh">Báo phụ huynh HS vắng không phép (email, SMS, Zalo)</label>
             </div>
             @endcan
             <button class="btn btn-primary" {{ $lop->hocSinh->isEmpty() ? 'disabled' : '' }}>

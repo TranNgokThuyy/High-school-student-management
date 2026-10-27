@@ -29,6 +29,12 @@ return [
         'token' => env('SMS_WEBHOOK_TOKEN'),
     ],
 
+    // Zalo ZNS: access token của Zalo Official Account và ID mẫu tin đã được duyệt
+    'zalo' => [
+        'access_token' => env('ZALO_ZNS_ACCESS_TOKEN'),
+        'template_id' => env('ZALO_ZNS_TEMPLATE_ID'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

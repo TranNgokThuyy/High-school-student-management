@@ -58,6 +58,12 @@
                                     <input class="form-check-input" type="checkbox" name="kenh[]" value="sms" id="kenhSms" {{ in_array('sms', old('kenh', [])) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="kenhSms">SMS (số điện thoại mẹ, nếu không có thì cha)</label>
                                 </div>
+                                <div class="form-check">
+                                    @php $coZalo = app(\App\Services\Sms\ZaloZnsGateway::class)->daCauHinh(); @endphp
+                                    <input class="form-check-input" type="checkbox" name="kenh[]" value="zalo" id="kenhZalo"
+                                           {{ $coZalo ? '' : 'disabled' }} {{ $coZalo && in_array('zalo', old('kenh', [])) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="kenhZalo">Zalo ZNS @unless($coZalo)<span class="text-muted small">(chưa cấu hình)</span>@endunless</label>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -8,7 +8,7 @@ class TinNhan extends Model
     protected $table = 'tin_nhan';
 
     public const LOAI = ['Thông báo chung', 'Chuyên cần', 'Học phí', 'Kết quả học tập', 'Khen thưởng - Kỷ luật'];
-    public const KENH = ['web' => 'Trang tra cứu', 'email' => 'Email', 'sms' => 'SMS'];
+    public const KENH = ['web' => 'Trang tra cứu', 'email' => 'Email', 'sms' => 'SMS', 'zalo' => 'Zalo'];
 
     protected $fillable = ['tieu_de', 'noi_dung', 'loai', 'pham_vi', 'kenh', 'nguoi_gui_id'];
 

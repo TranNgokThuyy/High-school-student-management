@@ -44,6 +44,9 @@ Tin nhắn được gửi qua hàng đợi, cần chạy worker: `php artisan qu
 - **SMS**: `SMS_DRIVER=log` (mặc định, chỉ ghi log) hoặc `SMS_DRIVER=webhook` để gửi
   `POST {"to": "<số điện thoại>", "message": "<nội dung>"}` kèm `Authorization: Bearer <SMS_WEBHOOK_TOKEN>`
   tới `SMS_WEBHOOK_URL` — nối tới nhà cung cấp SMS brandname / Zalo ZNS mà trường đăng ký.
+- **Zalo ZNS**: điền `ZALO_ZNS_ACCESS_TOKEN` (access token của Zalo Official Account) và `ZALO_ZNS_TEMPLATE_ID`
+  (mẫu tin đã được Zalo duyệt, khai báo các tham số `ho_ten`, `lop`, `tieu_de`, `noi_dung`). Chưa cấu hình thì kênh Zalo
+  tự ẩn. Lưu ý: access token của Zalo OA hết hạn định kỳ, cần làm mới token (thủ công hoặc qua dịch vụ trung gian).
 - Email phụ huynh nhập ở hồ sơ học sinh hoặc cột `email_phu_huynh` khi nhập Excel; SMS gửi tới số của mẹ, nếu trống thì của cha.
 
 ## Chức năng

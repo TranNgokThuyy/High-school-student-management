@@ -4,6 +4,7 @@ namespace App\Jobs;
 use App\Mail\TinNhanPhuHuynhMail;
 use App\Models\TinNhanNguoiNhan;
 use App\Services\Sms\SmsGateway;
+use App\Services\Sms\ZaloZnsGateway;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +18,7 @@ class GuiTinNhanPhuHuynh implements ShouldQueue
 
     public function __construct(public int $nguoiNhanId) {}
 
-    public function handle(SmsGateway $sms): void
+    public function handle(SmsGateway $sms, ZaloZnsGateway $zalo): void
     {
         $nguoiNhan = TinNhanNguoiNhan::with(['tinNhan', 'hocSinh.lopHoc'])->find($this->nguoiNhanId);
         if (!$nguoiNhan) {
@@ -43,6 +44,21 @@ class GuiTinNhanPhuHuynh implements ShouldQueue
             } catch (Throwable $e) {
                 $nguoiNhan->trang_thai_sms = TinNhanNguoiNhan::LOI;
                 $loi[] = 'SMS: ' . Str::limit($e->getMessage(), 200);
+            }
+        }
+
+        if ($nguoiNhan->trang_thai_zalo === TinNhanNguoiNhan::CHO_GUI) {
+            try {
+                $zalo->gui($nguoiNhan->so_dien_thoai, [
+                    'ho_ten'   => $nguoiNhan->hocSinh->ho_ten,
+                    'lop'      => $nguoiNhan->hocSinh->lopHoc?->ten_lop ?? '',
+                    'tieu_de'  => Str::limit($nguoiNhan->tinNhan->tieu_de, 100, '...'),
+                    'noi_dung' => Str::limit(preg_replace('/\s+/', ' ', $nguoiNhan->noi_dung), 380, '...'),
+                ], 'tn-' . $nguoiNhan->id);
+                $nguoiNhan->trang_thai_zalo = TinNhanNguoiNhan::DA_GUI;
+            } catch (Throwable $e) {
+                $nguoiNhan->trang_thai_zalo = TinNhanNguoiNhan::LOI;
+                $loi[] = 'Zalo: ' . Str::limit($e->getMessage(), 200);
             }
         }
 

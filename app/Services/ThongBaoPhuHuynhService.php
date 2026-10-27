@@ -5,6 +5,7 @@ use App\Jobs\GuiTinNhanPhuHuynh;
 use App\Models\HocSinh;
 use App\Models\TinNhan;
 use App\Models\TinNhanNguoiNhan;
+use App\Services\Sms\ZaloZnsGateway;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -35,6 +36,10 @@ class ThongBaoPhuHuynhService
         ?callable $noiDungRieng = null,
     ): TinNhan {
         $kenh = array_values(array_unique(array_merge(['web'], array_intersect($kenh, array_keys(TinNhan::KENH)))));
+        // Chỉ gửi Zalo khi trường đã cấu hình Zalo ZNS
+        if (!app(ZaloZnsGateway::class)->daCauHinh()) {
+            $kenh = array_values(array_diff($kenh, ['zalo']));
+        }
 
         $tinNhan = DB::transaction(function () use ($tieuDe, $noiDung, $loai, $phamVi, $hocSinh, $kenh, $nguoiGuiId, $noiDungRieng) {
             $tinNhan = TinNhan::create([
@@ -57,6 +62,7 @@ class ThongBaoPhuHuynhService
                     'so_dien_thoai'    => $soDienThoai,
                     'trang_thai_email' => $this->trangThaiBanDau(in_array('email', $kenh), $hs->email_phu_huynh),
                     'trang_thai_sms'   => $this->trangThaiBanDau(in_array('sms', $kenh), $soDienThoai),
+                    'trang_thai_zalo'  => $this->trangThaiBanDau(in_array('zalo', $kenh), $soDienThoai),
                 ]);
             }
 
@@ -74,7 +80,7 @@ class ThongBaoPhuHuynhService
         $soLuong = 0;
         foreach ($tinNhan->nguoiNhan()->get() as $nn) {
             $canGui = false;
-            foreach (['trang_thai_email', 'trang_thai_sms'] as $cot) {
+            foreach (['trang_thai_email', 'trang_thai_sms', 'trang_thai_zalo'] as $cot) {
                 if ($nn->$cot === TinNhanNguoiNhan::LOI) {
                     $nn->$cot = TinNhanNguoiNhan::CHO_GUI;
                     $canGui = true;
@@ -113,7 +119,8 @@ class ThongBaoPhuHuynhService
     {
         $tinNhan->nguoiNhan()
             ->where(fn ($q) => $q->where('trang_thai_email', TinNhanNguoiNhan::CHO_GUI)
-                ->orWhere('trang_thai_sms', TinNhanNguoiNhan::CHO_GUI))
+                ->orWhere('trang_thai_sms', TinNhanNguoiNhan::CHO_GUI)
+                ->orWhere('trang_thai_zalo', TinNhanNguoiNhan::CHO_GUI))
             ->pluck('id')
             ->each(fn ($id) => GuiTinNhanPhuHuynh::dispatch($id));
     }

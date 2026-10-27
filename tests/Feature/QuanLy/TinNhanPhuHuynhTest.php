@@ -180,4 +180,50 @@ class TinNhanPhuHuynhTest extends QuanLyTestCase
         $lopKhac = $this->taoLopNamNay(['ten_lop' => '10A2']);
         $this->actingAs($gv)->post('/tong-ket/gui-ket-qua', ['lop_hoc_id' => $lopKhac->id, 'hoc_ky' => '1'])->assertForbidden();
     }
+
+    public function test_gui_zalo_zns(): void
+    {
+        config(['services.zalo.access_token' => 'tok-zalo', 'services.zalo.template_id' => '123456']);
+        Http::fake([
+            'business.openapi.zalo.me/*' => Http::sequence()
+                ->push(['error' => 0, 'message' => 'Success', 'data' => ['msg_id' => 'abc']])
+                ->push(['error' => -108, 'message' => 'Phone number is invalid']),
+        ]);
+        $admin = $this->taoUser('quan-tri-vien');
+        $lop = $this->taoLopNamNay();
+        $hs1 = $this->taoHsCoLienLac($lop, 'An Zalo', null, '0912345678');
+        $hs2 = $this->taoHsCoLienLac($lop, 'Bình Zalo', null, '0987654321');
+
+        $this->actingAs($admin)->post('/tin-nhan', [
+            'pham_vi' => 'hoc_sinh', 'hoc_sinh_ids' => [$hs1->id, $hs2->id], 'loai' => 'Thông báo chung',
+            'tieu_de' => 'Thử Zalo', 'noi_dung' => 'Nội dung {ho_ten}', 'kenh' => ['zalo'],
+        ]);
+
+        $trangThai = TinNhanNguoiNhan::orderBy('hoc_sinh_id')->pluck('trang_thai_zalo')->all();
+        $this->assertSame([TinNhanNguoiNhan::DA_GUI, TinNhanNguoiNhan::LOI], $trangThai);
+        $this->assertStringContainsString('-108', TinNhanNguoiNhan::where('hoc_sinh_id', $hs2->id)->value('loi'));
+
+        Http::assertSent(fn ($req) => $req->url() === 'https://business.openapi.zalo.me/message/template'
+            && $req->hasHeader('access_token', 'tok-zalo')
+            && $req['phone'] === '84912345678'
+            && $req['template_id'] === '123456'
+            && $req['template_data']['ho_ten'] === 'An Zalo'
+            && $req['template_data']['noi_dung'] === 'Nội dung An Zalo');
+    }
+
+    public function test_khong_gui_zalo_khi_chua_cau_hinh(): void
+    {
+        Http::fake();
+        $admin = $this->taoUser('quan-tri-vien');
+        $hs = $this->taoHsCoLienLac($this->taoLopNamNay(), 'Chưa Zalo', null, '0912345678');
+
+        $this->actingAs($admin)->post('/tin-nhan', [
+            'pham_vi' => 'hoc_sinh', 'hoc_sinh_ids' => [$hs->id], 'loai' => 'Thông báo chung',
+            'tieu_de' => 'x', 'noi_dung' => 'x', 'kenh' => ['zalo'],
+        ]);
+
+        $this->assertSame(['web'], TinNhan::first()->kenh);
+        $this->assertSame(TinNhanNguoiNhan::KHONG_GUI, TinNhanNguoiNhan::first()->trang_thai_zalo);
+        Http::assertNothingSent();
+    }
 }

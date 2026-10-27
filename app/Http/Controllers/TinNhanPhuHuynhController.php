@@ -40,7 +40,8 @@ class TinNhanPhuHuynhController extends Controller
                 'nguoiNhan as sms_da_gui_count' => fn ($q) => $q->where('trang_thai_sms', TinNhanNguoiNhan::DA_GUI),
                 'nguoiNhan as loi_count' => fn ($q) => $q->where(fn ($q) => $q
                     ->where('trang_thai_email', TinNhanNguoiNhan::LOI)
-                    ->orWhere('trang_thai_sms', TinNhanNguoiNhan::LOI)),
+                    ->orWhere('trang_thai_sms', TinNhanNguoiNhan::LOI)
+                    ->orWhere('trang_thai_zalo', TinNhanNguoiNhan::LOI)),
             ])
             ->when(!auth()->user()->hasRole('quan-tri-vien'), fn ($q) => $q->where('nguoi_gui_id', auth()->id()))
             ->when($request->loai, fn ($q) => $q->where('loai', $request->loai))
@@ -80,7 +81,7 @@ class TinNhanPhuHuynhController extends Controller
             'tieu_de'        => 'required|string|max:200',
             'noi_dung'       => 'required|string|max:2000',
             'kenh'           => 'nullable|array',
-            'kenh.*'         => 'in:web,email,sms',
+            'kenh.*'         => 'in:web,email,sms,zalo',
         ], [
             'lop_hoc_ids.required_if'  => 'Vui lòng chọn ít nhất một lớp',
             'hoc_sinh_ids.required_if' => 'Vui lòng chọn ít nhất một học sinh',

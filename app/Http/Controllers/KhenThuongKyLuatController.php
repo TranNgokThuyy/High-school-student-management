@@ -92,7 +92,7 @@ class KhenThuongKyLuatController extends Controller
                 'Khen thưởng - Kỷ luật',
                 "PH em {$hocSinh->ho_ten}",
                 collect([$hocSinh]),
-                ['email'],
+                ['email', 'zalo'],
                 auth()->id(),
             );
         }

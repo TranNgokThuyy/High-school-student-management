@@ -123,7 +123,7 @@ class DiemDanhController extends Controller
                     'Chuyên cần',
                     "Lớp {$lop->ten_lop} - HS vắng không phép",
                     HocSinh::whereIn('id', $vangMoi)->get(),
-                    ['email', 'sms'],
+                    ['email', 'sms', 'zalo'],
                     auth()->id(),
                 );
                 $thongBao .= " Đã báo phụ huynh của {$vangMoi->count()} học sinh vắng không phép.";
