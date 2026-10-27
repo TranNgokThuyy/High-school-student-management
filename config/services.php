@@ -22,6 +22,19 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    // Gửi SMS cho phụ huynh: driver 'log' (chỉ ghi log) hoặc 'webhook' (POST JSON {to, message})
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'webhook_url' => env('SMS_WEBHOOK_URL'),
+        'token' => env('SMS_WEBHOOK_TOKEN'),
+    ],
+
+    // Zalo ZNS: access token của Zalo Official Account và ID mẫu tin đã được duyệt
+    'zalo' => [
+        'access_token' => env('ZALO_ZNS_ACCESS_TOKEN'),
+        'template_id' => env('ZALO_ZNS_TEMPLATE_ID'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class PhieuThu extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'phieu_thu';
 
     protected $fillable = [
@@ -19,9 +22,10 @@ class PhieuThu extends Model
         'huy_luc' => 'datetime',
     ];
 
-    protected static function booted(): void
+    protected static function boot(): void
     {
-        // Số phiếu dạng PT2026-000123, đặt sau khi có id để không bị trùng
+        // Số phiếu dạng PT2026-000123, đặt sau khi có id để không bị trùng.
+        // Đăng ký trước parent::boot() để chạy trước listener ghi nhật ký (trait GhiNhatKy).
         static::created(function (PhieuThu $phieu) {
             if (empty($phieu->so_phieu) || str_starts_with($phieu->so_phieu, 'TMP')) {
                 $phieu->so_phieu = 'PT' . $phieu->ngay_thu->format('Y') . '-' . str_pad($phieu->id, 6, '0', STR_PAD_LEFT);
@@ -31,6 +35,8 @@ class PhieuThu extends Model
         static::creating(function (PhieuThu $phieu) {
             $phieu->so_phieu ??= 'TMP' . uniqid();
         });
+
+        parent::boot();
     }
 
     public function scopeHopLe($query)
@@ -56,5 +62,10 @@ class PhieuThu extends Model
     public function nguoiHuy()
     {
         return $this->belongsTo(User::class, 'nguoi_huy_id');
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Phiếu thu {$this->so_phieu} — {$this->hocSinh?->ho_ten} — {$this->khoanThu?->ten}";
     }
 }

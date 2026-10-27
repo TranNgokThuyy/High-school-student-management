@@ -45,7 +45,7 @@ class DiemSoExport implements FromCollection, WithHeadings, WithMapping, WithSty
                     'nam_hoc' => $this->namHoc,
                 ])->first();
                 
-                $row['mon_' . $mon->id] = $diem ? $diem->diem_trung_binh : null;
+                $row['mon_' . $mon->id] = $diem ? ($diem->diem_trung_binh ?? $diem->ket_qua_nhan_xet) : null;
             }
             
             $data->push($row);

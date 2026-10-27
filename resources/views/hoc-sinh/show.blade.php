@@ -19,10 +19,23 @@
         <a href="{{ route('hoc-sinh.phieu-diem', $hocSinh) }}" target="_blank" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-pdf me-2"></i>Phiếu điểm
         </a>
+        <a href="{{ route('hoc-sinh.hoc-ba', $hocSinh) }}" target="_blank" class="btn btn-outline-primary">
+            <i class="bi bi-journal-bookmark me-2"></i>Học bạ
+        </a>
+        @endcan
+        @can('gui-tin-phu-huynh')
+        <a href="{{ route('tin-nhan.create', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-info">
+            <i class="bi bi-chat-dots me-2"></i>Nhắn phụ huynh
+        </a>
         @endcan
         @can('xem-hoc-phi')
         <a href="{{ route('hoc-phi.hoc-sinh', $hocSinh) }}" class="btn btn-outline-success">
             <i class="bi bi-cash-coin me-2"></i>Học phí
+        </a>
+        @endcan
+        @can('xem-nhat-ky')
+        <a href="{{ route('nhat-ky.index', ['hoc_sinh_id' => $hocSinh->id]) }}" class="btn btn-outline-secondary" title="Lịch sử thay đổi điểm, hồ sơ, học phí">
+            <i class="bi bi-clock-history"></i>
         </a>
         @endcan
         @can('sua-hoc-sinh')
@@ -57,6 +70,18 @@
 
                 <h5 class="fw-bold mb-1">{{ $hocSinh->ho_ten }}</h5>
                 <p class="text-muted mb-2 small">{{ $hocSinh->ma_hoc_sinh }}</p>
+                @if(auth()->user()->hasRole('quan-tri-vien') || $hocSinh->lopHoc?->giao_vien_chu_nhiem_id == auth()->id())
+                <div class="small mb-2">
+                    Mã tra cứu PH: <code class="fs-6">{{ $hocSinh->ma_tra_cuu }}</code>
+                    @can('sua-hoc-sinh')
+                    <form method="POST" action="{{ route('ma-tra-cuu.cap-lai', $hocSinh) }}" class="d-inline"
+                          onsubmit="return confirm('Cấp mã tra cứu mới? Mã cũ sẽ không dùng được nữa.')">
+                        @csrf
+                        <button class="btn btn-link btn-sm p-0 ms-1" title="Cấp lại mã"><i class="bi bi-arrow-repeat"></i></button>
+                    </form>
+                    @endcan
+                </div>
+                @endif
 
                 @php
                     $trangThaiColors = [
@@ -140,6 +165,10 @@
                                 —
                             @endif
                         </td>
+                    </tr>
+                    <tr class="border-top">
+                        <td class="text-muted ps-3">Email PH</td>
+                        <td>{{ $hocSinh->email_phu_huynh ?? '—' }}</td>
                     </tr>
                 </table>
             </div>

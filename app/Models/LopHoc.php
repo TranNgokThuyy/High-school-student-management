@@ -1,12 +1,15 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LopHoc extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'lop_hoc';
 
     protected $fillable = [
@@ -49,5 +52,10 @@ class LopHoc extends Model
     public function capNhatSiSo(): void
     {
         $this->update(['si_so' => $this->hocSinh()->count()]);
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Lớp {$this->ten_lop} ({$this->nam_hoc})";
     }
 }

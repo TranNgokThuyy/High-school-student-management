@@ -185,6 +185,11 @@
             <a href="{{ route('thong-bao.index') }}" class="nav-link {{ request()->routeIs('thong-bao.*') ? 'active' : '' }}">
                 <i class="bi bi-megaphone"></i> Thông báo
             </a>
+            @can('gui-tin-phu-huynh')
+            <a href="{{ route('tin-nhan.index') }}" class="nav-link {{ request()->routeIs('tin-nhan.*') ? 'active' : '' }}">
+                <i class="bi bi-chat-dots"></i> Tin nhắn phụ huynh
+            </a>
+            @endcan
             
             @can('xem-hoc-sinh')
             <span class="nav-section">Học sinh</span>
@@ -262,6 +267,16 @@
             <span class="nav-section">Hệ thống</span>
             <a href="{{ route('tai-khoan.index') }}" class="nav-link {{ request()->routeIs('tai-khoan.*') ? 'active' : '' }}">
                 <i class="bi bi-people-fill"></i> Quản lý tài khoản
+            </a>
+            @endcan
+            @can('xem-nhat-ky')
+            <a href="{{ route('nhat-ky.index') }}" class="nav-link {{ request()->routeIs('nhat-ky.*') ? 'active' : '' }}">
+                <i class="bi bi-clock-history"></i> Nhật ký thao tác
+            </a>
+            @endcan
+            @can('quan-ly-sao-luu')
+            <a href="{{ route('sao-luu.index') }}" class="nav-link {{ request()->routeIs('sao-luu.*') ? 'active' : '' }}">
+                <i class="bi bi-database-check"></i> Sao lưu dữ liệu
             </a>
             @endcan
         </div>

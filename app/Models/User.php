@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -8,7 +9,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, GhiNhatKy;
 
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'is_active', 'last_login_at',
@@ -42,5 +43,10 @@ class User extends Authenticatable
     public function diemSo()
     {
         return $this->hasMany(DiemSo::class, 'giao_vien_id');
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Tài khoản {$this->name} ({$this->email})";
     }
 }

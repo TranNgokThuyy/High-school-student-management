@@ -1,13 +1,14 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class HocSinh extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, GhiNhatKy;
 
     protected $table = 'hoc_sinh';
 
@@ -15,8 +16,8 @@ class HocSinh extends Model
         'ho_ten', 'ngay_sinh', 'gioi_tinh', 'dan_toc', 'ton_giao',
         'dia_chi_thuong_tru', 'dia_chi_tam_tru', 'so_dien_thoai', 'email',
         'cccd', 'ho_ten_cha', 'nghe_nghiep_cha', 'so_dien_thoai_cha',
-        'ho_ten_me', 'nghe_nghiep_me', 'so_dien_thoai_me',
-        'trang_thai', 'lop_hoc_id', 'ma_hoc_sinh', 'anh_the',
+        'ho_ten_me', 'nghe_nghiep_me', 'so_dien_thoai_me', 'email_phu_huynh',
+        'trang_thai', 'lop_hoc_id', 'ma_hoc_sinh', 'ma_tra_cuu', 'anh_the',
     ];
 
     protected $casts = [
@@ -29,6 +30,9 @@ class HocSinh extends Model
         static::creating(function ($hocSinh) {
             if (empty($hocSinh->ma_hoc_sinh)) {
                 $hocSinh->ma_hoc_sinh = self::generateMaHocSinh();
+            }
+            if (empty($hocSinh->ma_tra_cuu)) {
+                $hocSinh->ma_tra_cuu = self::taoMaTraCuu();
             }
         });
     }
@@ -56,6 +60,20 @@ class HocSinh extends Model
             $exists = DB::table('hoc_sinh')->where('ma_hoc_sinh', $ma)->exists();
             if ($exists) $soThuTu++;
         } while ($exists);
+
+        return $ma;
+    }
+
+    // Mã tra cứu 8 ký tự, bỏ các ký tự dễ nhầm (0/O, 1/I/L) để phụ huynh dễ nhập
+    public static function taoMaTraCuu(): string
+    {
+        $kyTu = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        do {
+            $ma = '';
+            for ($i = 0; $i < 8; $i++) {
+                $ma .= $kyTu[random_int(0, strlen($kyTu) - 1)];
+            }
+        } while (DB::table('hoc_sinh')->where('ma_tra_cuu', $ma)->exists());
 
         return $ma;
     }
@@ -96,5 +114,21 @@ class HocSinh extends Model
     public function khenThuongKyLuat()
     {
         return $this->hasMany(KhenThuongKyLuat::class, 'hoc_sinh_id');
+    }
+
+    public function tinNhan()
+    {
+        return $this->hasMany(TinNhanNguoiNhan::class, 'hoc_sinh_id');
+    }
+
+    // Số điện thoại phụ huynh dùng để nhắn tin: ưu tiên mẹ, sau đó cha
+    public function getSoDienThoaiPhuHuynhAttribute(): ?string
+    {
+        return $this->so_dien_thoai_me ?: $this->so_dien_thoai_cha ?: null;
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Học sinh {$this->ho_ten} ({$this->ma_hoc_sinh})";
     }
 }

@@ -130,6 +130,10 @@
                             <input type="tel" name="so_dien_thoai_me" class="form-control"
                                    value="{{ old('so_dien_thoai_me', $hocSinh->so_dien_thoai_me) }}">
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email phụ huynh <span class="text-muted small">(nhận thông báo từ nhà trường)</span></label>
+                            <input type="email" name="email_phu_huynh" class="form-control" value="{{ old('email_phu_huynh', $hocSinh->email_phu_huynh) }}" maxlength="100">
+                        </div>
                     </div>
                 </div>
             </div>

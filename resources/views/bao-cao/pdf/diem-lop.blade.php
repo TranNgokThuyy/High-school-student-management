@@ -103,7 +103,7 @@
                     @foreach($monHoc as $mon)
                         @php $dtb = $item['diem'][$mon->id]?->diem_trung_binh ?? null; @endphp
                         <td class="{{ !is_null($dtb) && $dtb < 5 ? 'yeu' : '' }}">
-                            {{ !is_null($dtb) ? number_format($dtb, 1) : '' }}
+                            {{ !is_null($dtb) ? number_format($dtb, 1) : ($item['diem'][$mon->id]?->ket_qua_nhan_xet ?? '') }}
                         </td>
                     @endforeach
                     <td class="{{ $cssClass }}">

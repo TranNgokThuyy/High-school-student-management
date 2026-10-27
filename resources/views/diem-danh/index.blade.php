@@ -122,9 +122,17 @@
         <div class="card-footer bg-white d-flex justify-content-between align-items-center">
             <small class="text-muted">CM: Có mặt · P: Vắng có phép · K: Vắng không phép · T: Đi trễ</small>
             @can('diem-danh')
+            <div class="d-flex align-items-center gap-3">
+            @can('gui-tin-phu-huynh')
+            <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="bao_phu_huynh" value="1" id="baoPhuHuynh" checked>
+                <label class="form-check-label small" for="baoPhuHuynh">Báo phụ huynh HS vắng không phép (email, SMS, Zalo)</label>
+            </div>
+            @endcan
             <button class="btn btn-primary" {{ $lop->hocSinh->isEmpty() ? 'disabled' : '' }}>
                 <i class="bi bi-save me-2"></i>Lưu điểm danh
             </button>
+            </div>
             @endcan
         </div>
     </div>

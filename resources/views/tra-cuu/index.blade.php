@@ -21,12 +21,13 @@
                                value="{{ old('ma_hoc_sinh') }}" placeholder="VD: HS20260001" autocomplete="off">
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fw-semibold">Ngày sinh</label>
-                        <input type="date" name="ngay_sinh" class="form-control" required value="{{ old('ngay_sinh') }}">
+                        <label class="form-label fw-semibold">Mã tra cứu</label>
+                        <input type="text" name="ma_tra_cuu" class="form-control text-uppercase" required maxlength="20"
+                               placeholder="8 ký tự, VD: K7MX3QPA" autocomplete="off">
                     </div>
                     <button class="btn btn-primary w-100"><i class="bi bi-search me-2"></i>Tra cứu</button>
                 </form>
-                <p class="small text-muted mt-3 mb-0">Mã học sinh được ghi trên thẻ học sinh hoặc liên hệ giáo viên chủ nhiệm.</p>
+                <p class="small text-muted mt-3 mb-0">Mã học sinh và mã tra cứu được ghi trên phiếu nhà trường phát cho phụ huynh. Nếu mất phiếu, vui lòng liên hệ giáo viên chủ nhiệm để được cấp lại.</p>
             </div>
         </div>
     </div>

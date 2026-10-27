@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HocSinh;
 use App\Models\LopHoc;
+use App\Services\ThongBaoPhuHuynhService;
 use App\Services\TongKetService;
 use App\Support\NamHoc;
 use Illuminate\Http\Request;
@@ -65,6 +66,54 @@ class TongKetController extends Controller
         }
 
         return view('tong-ket.index', compact('lopHoc', 'lop', 'hocKy', 'monHoc', 'ketQua', 'thongKe'));
+    }
+
+    // Gửi kết quả học tập, rèn luyện của học kỳ / cả năm cho phụ huynh từng học sinh
+    public function guiKetQua(Request $request, ThongBaoPhuHuynhService $thongBao)
+    {
+        $request->validate([
+            'lop_hoc_id' => 'required|exists:lop_hoc,id',
+            'hoc_ky'     => 'required|in:1,2,Ca năm',
+            'kenh'       => 'nullable|array',
+            'kenh.*'     => 'in:email,sms,zalo',
+        ]);
+
+        $lop = LopHoc::findOrFail($request->lop_hoc_id);
+        $this->kiemTraQuyenLop($lop);
+
+        ['mon_hoc' => $monHoc, 'ket_qua' => $ketQua] = $this->tongKet->tongKetLop($lop, $request->hoc_ky);
+        $ketQua = $ketQua->filter(fn ($r) => $r['dang_o_lop'])->keyBy(fn ($r) => $r['hoc_sinh']->id);
+        if ($ketQua->isEmpty()) {
+            return back()->with('error', 'Lớp không có học sinh để gửi kết quả.');
+        }
+
+        $tenKy = $request->hoc_ky === 'Ca năm' ? 'cả năm' : 'học kỳ ' . $request->hoc_ky;
+
+        $tinNhan = $thongBao->gui(
+            "Kết quả học tập {$tenKy} năm học {$lop->nam_hoc}",
+            "Kết quả học tập và rèn luyện {$tenKy} của từng học sinh.",
+            'Kết quả học tập',
+            "Lớp {$lop->ten_lop}",
+            $ketQua->pluck('hoc_sinh'),
+            $request->input('kenh', []),
+            auth()->id(),
+            function ($hs) use ($ketQua, $monHoc, $tenKy) {
+                $r = $ketQua[$hs->id];
+                $diem = $monHoc->map(fn ($m) => $m->ten_mon . ': ' . \App\Support\Diem::hienThi($r['diem_mon'][$m->id]))
+                    ->implode('; ');
+
+                return "Kết quả {$tenKy} của em {$hs->ho_ten}:\n"
+                    . "- Điểm trung bình các môn: {$diem}\n"
+                    . '- Kết quả học tập: ' . ($r['hoc_tap'] ?? 'Chưa đủ điểm') . "\n"
+                    . '- Kết quả rèn luyện: ' . ($r['ren_luyen'] ?? 'Chưa xếp loại') . "\n"
+                    . "- Số buổi nghỉ: {$r['so_buoi_nghi']}"
+                    . ($r['danh_hieu'] ? "\n- Danh hiệu: {$r['danh_hieu']}" : '')
+                    . ($r['len_lop'] ? "\n- Kết quả xét cuối năm: {$r['len_lop']['ket_qua']}" : '');
+            },
+        );
+
+        return redirect()->route('tin-nhan.show', $tinNhan)
+            ->with('success', "Đã gửi kết quả {$tenKy} tới phụ huynh của {$ketQua->count()} học sinh.");
     }
 
     // Màn hình xét lên lớp / chuyển học sinh sang năm học mới

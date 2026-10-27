@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class KhoanThu extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'khoan_thu';
 
     public const LOAI = ['Học phí', 'Bảo hiểm', 'Quỹ', 'Dịch vụ', 'Khác'];
@@ -42,5 +45,10 @@ class KhoanThu extends Model
         }
 
         return (int) round($this->so_tien * (100 - $mienGiam->phan_tram) / 100);
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "Khoản thu {$this->ten} ({$this->nam_hoc})";
     }
 }

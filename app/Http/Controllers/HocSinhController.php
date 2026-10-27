@@ -75,21 +75,21 @@ class HocSinhController extends Controller implements HasMiddleware
     {
         abort_unless(auth()->user()->can('them-hoc-sinh'), 403);
 
-        $headers = ['ho_ten', 'ngay_sinh', 'gioi_tinh', 'ten_lop', 'nam_hoc', 'cccd', 'so_dien_thoai', 'email', 'dan_toc', 'dia_chi_thuong_tru', 'ho_ten_cha', 'so_dien_thoai_cha', 'ho_ten_me', 'so_dien_thoai_me'];
+        $headers = ['ho_ten', 'ngay_sinh', 'gioi_tinh', 'ten_lop', 'nam_hoc', 'cccd', 'so_dien_thoai', 'email', 'dan_toc', 'dia_chi_thuong_tru', 'ho_ten_cha', 'so_dien_thoai_cha', 'ho_ten_me', 'so_dien_thoai_me', 'email_phu_huynh'];
         $lop = LopHoc::where('is_active', true)->orderByDesc('nam_hoc')->orderBy('ten_lop')->first();
-        $example = ['Nguyễn Văn An', '15/08/2010', 'Nam', $lop->ten_lop ?? '10A1', $lop->nam_hoc ?? NamHoc::hienTai(), '012345678901', '0912345678', 'an@example.com', 'Kinh', 'Hà Nội', 'Nguyễn Văn Bình', '0987654321', 'Trần Thị Hoa', '0976543210'];
+        $example = ['Nguyễn Văn An', '15/08/2010', 'Nam', $lop->ten_lop ?? '10A1', $lop->nam_hoc ?? NamHoc::hienTai(), '012345678901', '0912345678', 'an@example.com', 'Kinh', 'Hà Nội', 'Nguyễn Văn Bình', '0987654321', 'Trần Thị Hoa', '0976543210', 'phuhuynh.an@example.com'];
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet()->setTitle('Danh sách học sinh');
         // Định dạng văn bản để Excel không xóa số 0 đầu của CCCD / số điện thoại / ngày sinh
-        $sheet->getStyle('A:N')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+        $sheet->getStyle('A:O')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
         $sheet->fromArray([$headers]);
         foreach ($example as $i => $value) {
             $sheet->getCell([$i + 1, 2])->setValueExplicit($value, DataType::TYPE_STRING);
         }
-        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:O1')->getFont()->setBold(true);
         $sheet->getStyle('A1:E1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
-        foreach (range('A', 'N') as $cot) {
+        foreach (range('A', 'O') as $cot) {
             $sheet->getColumnDimension($cot)->setAutoSize(true);
         }
 
@@ -161,6 +161,7 @@ class HocSinhController extends Controller implements HasMiddleware
                 'so_dien_thoai_cha' => ['nullable', 'digits_between:9,12'],
                 'ho_ten_me' => ['nullable', 'string', 'max:100'],
                 'so_dien_thoai_me' => ['nullable', 'digits_between:9,12'],
+                'email_phu_huynh' => ['nullable', 'email', 'max:100'],
             ], [
                 'ngay_sinh.date_format' => 'Ngày sinh phải có dạng dd/mm/yyyy.',
                 'gioi_tinh.in' => 'Giới tính phải là Nam, Nữ hoặc Khác.',
@@ -202,6 +203,7 @@ class HocSinhController extends Controller implements HasMiddleware
                 'so_dien_thoai_cha' => $row['so_dien_thoai_cha'] ?? null,
                 'ho_ten_me' => $row['ho_ten_me'] ?? null,
                 'so_dien_thoai_me' => $row['so_dien_thoai_me'] ?? null,
+                'email_phu_huynh' => $row['email_phu_huynh'] ?? null,
                 'trang_thai' => 'Đang học',
             ]);
             $imported++;
@@ -262,6 +264,7 @@ class HocSinhController extends Controller implements HasMiddleware
         'ho_ten_me'          => 'nullable|string|max:100',
         'nghe_nghiep_me'     => 'nullable|string|max:100',
         'so_dien_thoai_me'   => 'nullable|digits_between:9,12',
+        'email_phu_huynh'    => 'nullable|email|max:100',
         'lop_hoc_id'         => 'nullable|exists:lop_hoc,id',
         'trang_thai'         => 'required|in:Đang học,Đã tốt nghiệp,Thôi học,Chuyển trường',
         'anh_the'            => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -328,6 +331,7 @@ class HocSinhController extends Controller implements HasMiddleware
             'ho_ten_me' => 'nullable|string|max:100',
             'nghe_nghiep_me' => 'nullable|string|max:100',
             'so_dien_thoai_me' => 'nullable|digits_between:9,12|max:12',
+            'email_phu_huynh' => 'nullable|email|max:100',
             'trang_thai' => 'required|in:Đang học,Đã tốt nghiệp,Thôi học,Chuyển trường',
             'lop_hoc_id' => 'nullable|exists:lop_hoc,id',
             'anh_the' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

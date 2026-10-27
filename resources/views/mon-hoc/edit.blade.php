@@ -94,6 +94,15 @@
                                        min="1" max="10" required>
                                 <span class="input-group-text">tiết</span>
                             </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Hình thức đánh giá <span class="text-danger">*</span></label>
+                            <select name="hinh_thuc_danh_gia" class="form-select">
+                                <option value="Điểm số" {{ old('hinh_thuc_danh_gia', $monHoc->hinh_thuc_danh_gia) == 'Điểm số' ? 'selected' : '' }}>Điểm số (thang 10)</option>
+                                <option value="Nhận xét" {{ old('hinh_thuc_danh_gia', $monHoc->hinh_thuc_danh_gia) == 'Nhận xét' ? 'selected' : '' }}>Nhận xét (Đạt / Chưa đạt)</option>
+                            </select>
+                            <div class="form-text">Theo TT22: GDTC, Nghệ thuật, HĐ trải nghiệm - hướng nghiệp, GD địa phương đánh giá bằng nhận xét.</div>
+                        </div>
                             @error('so_tiet_tuan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

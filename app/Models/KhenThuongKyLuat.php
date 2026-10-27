@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\GhiNhatKy;
 use Illuminate\Database\Eloquent\Model;
 
 class KhenThuongKyLuat extends Model
 {
+    use GhiNhatKy;
+
     protected $table = 'khen_thuong_ky_luat';
 
     public const HINH_THUC = [
@@ -29,5 +32,10 @@ class KhenThuongKyLuat extends Model
     public function nguoiTao()
     {
         return $this->belongsTo(User::class, 'nguoi_tao_id');
+    }
+
+    public function moTaNhatKy(): string
+    {
+        return "{$this->loai} ({$this->hinh_thuc}) — {$this->hocSinh?->ho_ten}";
     }
 }

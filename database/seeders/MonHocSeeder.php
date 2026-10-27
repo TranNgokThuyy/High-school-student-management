@@ -19,9 +19,13 @@ class MonHocSeeder extends Seeder
             ['DIA',   'Địa lý',         2, 'Tất cả'],
             ['GDCD',  'GDCD',           1, 'Tất cả'],
             ['TIN',   'Tin học',        2, 'Tất cả'],
-            ['TD',    'Thể dục',        2, 'Tất cả'],
+            ['TD',    'Giáo dục thể chất', 2, 'Tất cả'],
             ['CNGT',  'Công nghệ',      1, 'Tất cả'],
         ];
+
+        // Môn đánh giá bằng nhận xét theo Thông tư 22/2021
+        $monNhanXet = ['TD', 'HDTN'];
+        $monHoc[] = ['HDTN', 'HĐ trải nghiệm, hướng nghiệp', 3, 'Tất cả'];
 
         foreach ($monHoc as [$ma, $ten, $tiet, $khoi]) {
             MonHoc::firstOrCreate(
@@ -30,6 +34,7 @@ class MonHocSeeder extends Seeder
                     'ten_mon'      => $ten,
                     'so_tiet_tuan' => $tiet,
                     'khoi'         => $khoi,
+                    'hinh_thuc_danh_gia' => in_array($ma, $monNhanXet) ? 'Nhận xét' : 'Điểm số',
                     'is_active'    => true,
                 ]
             );

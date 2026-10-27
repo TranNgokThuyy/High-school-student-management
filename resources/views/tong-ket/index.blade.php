@@ -24,6 +24,22 @@
             <i class="bi bi-arrow-up-circle me-2"></i>Xét lên lớp
         </a>
         @endcan
+        @if($lop)
+        @can('gui-tin-phu-huynh')
+        <form method="POST" action="{{ route('tong-ket.gui-ket-qua') }}" class="d-flex align-items-center gap-2"
+              onsubmit="return confirm('Gửi kết quả {{ $hocKy === 'Ca năm' ? 'cả năm' : 'học kỳ ' . $hocKy }} tới phụ huynh lớp {{ $lop->ten_lop }}?')">
+            @csrf
+            <input type="hidden" name="lop_hoc_id" value="{{ $lop->id }}">
+            <input type="hidden" name="hoc_ky" value="{{ $hocKy }}">
+            <input type="hidden" name="kenh[]" value="email">
+            <input type="hidden" name="kenh[]" value="zalo">
+            <button class="btn btn-outline-primary"><i class="bi bi-send me-2"></i>Gửi kết quả cho phụ huynh</button>
+        </form>
+        @endcan
+        @endif
+        @if($lop)
+        <a href="{{ route('lop-hoc.so-diem', $lop) }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Sổ điểm</a>
+        @endif
         <button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer me-2"></i>In</button>
     </div>
 </div>
@@ -118,7 +134,7 @@
                     </td>
                     @foreach($monHoc as $mon)
                         @php $d = $r['diem_mon'][$mon->id]; @endphp
-                        <td class="text-center {{ !is_null($d) && $d < 5 ? 'diem-thap' : '' }}">{{ is_null($d) ? '—' : number_format($d, 1) }}</td>
+                        <td class="text-center {{ \App\Support\Diem::thap($d) ? 'diem-thap' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
                     @endforeach
                     <td class="text-center fw-semibold">{{ $r['dtb_chung'] ?? '—' }}</td>
                     <td class="text-center">

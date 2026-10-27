@@ -3,7 +3,7 @@
 
 @section('content')
 @use('App\Support\Tien')
-@php $ky = $ketQua['theo_ky'] ?? null; $dd = fn ($d) => is_null($d) ? '—' : number_format($d, 1); @endphp
+@php $ky = $ketQua['theo_ky'] ?? null; @endphp
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-1">{{ $hocSinh->ho_ten }}</h4>
@@ -14,6 +14,26 @@
         <a href="{{ route('tra-cuu') }}" class="btn btn-outline-primary">Tra cứu khác</a>
     </div>
 </div>
+
+@if($tinNhan->isNotEmpty())
+<div class="card the mb-4">
+    <div class="card-header bg-white py-3 fw-semibold">
+        <i class="bi bi-envelope-open me-2 text-primary"></i>Tin nhắn từ nhà trường
+        @if($soMoi = $tinNhan->whereNull('da_xem_luc')->count())<span class="badge bg-danger ms-1">{{ $soMoi }} mới</span>@endif
+    </div>
+    <div class="list-group list-group-flush">
+        @foreach($tinNhan as $tn)
+        <div class="list-group-item {{ $tn->da_xem_luc ? '' : 'bg-primary-subtle' }}">
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+                <span class="fw-semibold">{{ $tn->tinNhan->tieu_de }}</span>
+                <span class="small text-muted">{{ $tn->tinNhan->loai }} · {{ $tn->created_at->format('H:i d/m/Y') }}</span>
+            </div>
+            <div class="small mt-1" style="white-space: pre-line">{{ $tn->noi_dung }}</div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
 
 <div class="row g-4">
     <div class="col-lg-8">
@@ -31,7 +51,7 @@
                             <td class="text-start">{{ $mon->ten_mon }}</td>
                             @foreach(['1', '2', 'Ca năm'] as $k)
                                 @php $d = $ky[$k]['diem_mon'][$mon->id] ?? null; @endphp
-                                <td class="{{ !is_null($d) && $d < 5 ? 'text-danger fw-semibold' : '' }}">{{ $dd($d) }}</td>
+                                <td class="{{ \App\Support\Diem::thap($d) ? 'text-danger fw-semibold' : '' }}">{{ \App\Support\Diem::hienThi($d) }}</td>
                             @endforeach
                         </tr>
                         @endforeach

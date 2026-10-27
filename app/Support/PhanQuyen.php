@@ -23,6 +23,8 @@ class PhanQuyen
         'xem-khen-thuong', 'them-khen-thuong', 'xoa-khen-thuong',
         'xem-hoc-phi', 'thu-hoc-phi', 'huy-phieu-thu', 'quan-ly-khoan-thu',
         'dang-thong-bao',
+        'gui-tin-phu-huynh',
+        'xem-nhat-ky', 'quan-ly-sao-luu',
     ];
 
     public const VAI_TRO = [
@@ -40,6 +42,7 @@ class PhanQuyen
             'xem-tong-ket',
             'xem-khen-thuong', 'them-khen-thuong',
             'xem-hoc-phi',
+            'gui-tin-phu-huynh',
         ],
         'giao-vien-bo-mon' => [
             'xem-hoc-sinh',
@@ -54,6 +57,7 @@ class PhanQuyen
             'xem-lop-hoc',
             'xem-hoc-phi', 'thu-hoc-phi', 'quan-ly-khoan-thu',
             'xem-bao-cao',
+            'gui-tin-phu-huynh',
         ],
     ];
 
