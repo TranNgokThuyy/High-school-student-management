@@ -100,7 +100,19 @@
         <option value="giao-vien-chu-nhiem"
             {{ in_array($currentRole, ['giao-vien-chu-nhiem']) ? 'selected' : '' }}
             {{ $isAdmin ? 'disabled' : '' }}>
-            Giáo viên
+            Giáo viên chủ nhiệm
+        </option>
+
+        <option value="giao-vien-bo-mon"
+            {{ $currentRole === 'giao-vien-bo-mon' ? 'selected' : '' }}
+            {{ $isAdmin ? 'disabled' : '' }}>
+            Giáo viên bộ môn
+        </option>
+
+        <option value="ke-toan"
+            {{ $currentRole === 'ke-toan' ? 'selected' : '' }}
+            {{ $isAdmin ? 'disabled' : '' }}>
+            Kế toán
         </option>
    
 </select>

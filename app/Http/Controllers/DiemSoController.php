@@ -5,6 +5,7 @@ use App\Models\DiemSo;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
 use App\Models\MonHoc;
+use App\Models\PhanCongGiangDay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,7 @@ class DiemSoController extends Controller
         $diem = collect();
         $selectedLop = null;
         $selectedMon = null;
+        $duocNhapDiem = false;
 
         if ($request->filled(['lop_hoc_id', 'mon_hoc_id', 'hoc_ky', 'nam_hoc'])) {
             $selectedLop = LopHoc::with('hocSinh')->find($request->lop_hoc_id);
@@ -34,11 +36,15 @@ class DiemSoController extends Controller
                     'hoc_ky' => $request->hoc_ky,
                     'nam_hoc' => $request->nam_hoc,
                 ])->with('hocSinh')->get()->keyBy('hoc_sinh_id');
+
+                $duocNhapDiem = PhanCongGiangDay::duocNhapDiem(
+                    auth()->user(), $selectedLop->id, $selectedMon->id, $request->hoc_ky, $request->nam_hoc
+                );
             }
         }
 
         return view('diem-so.bang-diem', compact(
-            'lopHoc', 'monHoc', 'namHoc', 'diem', 'selectedLop', 'selectedMon'
+            'lopHoc', 'monHoc', 'namHoc', 'diem', 'selectedLop', 'selectedMon', 'duocNhapDiem'
         ));
     }
 
@@ -51,6 +57,8 @@ class DiemSoController extends Controller
             'hoc_ky' => 'required|in:1,2',
             'nam_hoc' => 'required|string',
         ]);
+
+        $this->kiemTraPhanCong($request);
 
         $lop = LopHoc::with('hocSinh')->findOrFail($request->lop_hoc_id);
         $mon = MonHoc::findOrFail($request->mon_hoc_id);
@@ -85,8 +93,14 @@ class DiemSoController extends Controller
             'diem.*.diem_ck' => 'nullable|numeric|min:0|max:10',
         ]);
 
-        DB::transaction(function () use ($request) {
-            foreach ($request->diem as $hocSinhId => $diemData) {
+        $this->kiemTraPhanCong($request);
+
+        // Chỉ nhận điểm của học sinh thuộc lớp đang nhập
+        $hocSinhCuaLop = HocSinh::where('lop_hoc_id', $request->lop_hoc_id)->pluck('id')->all();
+        $diemHopLe = array_intersect_key($request->diem, array_flip($hocSinhCuaLop));
+
+        DB::transaction(function () use ($request, $diemHopLe) {
+            foreach ($diemHopLe as $hocSinhId => $diemData) {
                 $record = DiemSo::firstOrNew([
                     'hoc_sinh_id' => $hocSinhId,
                     'mon_hoc_id' => $request->mon_hoc_id,
@@ -119,5 +133,20 @@ class DiemSoController extends Controller
             'hoc_ky' => $request->hoc_ky,
             'nam_hoc' => $request->nam_hoc,
         ])->with('success', 'Đã lưu điểm thành công!');
+    }
+
+    private function kiemTraPhanCong(Request $request): void
+    {
+        abort_unless(
+            PhanCongGiangDay::duocNhapDiem(
+                auth()->user(),
+                (int) $request->lop_hoc_id,
+                (int) $request->mon_hoc_id,
+                $request->hoc_ky,
+                $request->nam_hoc
+            ),
+            403,
+            'Bạn chưa được phân công giảng dạy môn này ở lớp này!'
+        );
     }
 }

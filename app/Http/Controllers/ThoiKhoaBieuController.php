@@ -12,7 +12,7 @@ class ThoiKhoaBieuController extends Controller
     private function getLopHoc()
     {
         $user = auth()->user();
-        if ($user->hasRole('giao-vien-chu-nhiem')) {
+        if (!$user->hasRole('quan-tri-vien')) {
             return LopHoc::where('giao_vien_chu_nhiem_id', $user->id)
                 ->where('is_active', true)->orderBy('ten_lop')->get();
         }
@@ -23,7 +23,7 @@ class ThoiKhoaBieuController extends Controller
 {
     $user          = auth()->user();
     $lopHoc        = $this->getLopHoc();
-    $namHocHienTai = date('Y') . '-' . (date('Y') + 1);
+    $namHocHienTai = \App\Support\NamHoc::hienTai();
 
     $lopId  = $request->lop_hoc_id ?? $lopHoc->first()?->id;
     $hocKy  = $request->hoc_ky ?? '1';
@@ -56,7 +56,7 @@ class ThoiKhoaBieuController extends Controller
     }
 
     $tkbGiaoVien = collect();
-    if ($user->hasRole('giao-vien') || $user->hasRole('giao-vien-chu-nhiem')) {
+    if ($user->hasAnyRole(['giao-vien-bo-mon', 'giao-vien-chu-nhiem'])) {
         $tkbGiaoVien = ThoiKhoaBieu::where([
             'giao_vien_id' => $user->id,
             'hoc_ky'       => $hocKy,
@@ -78,10 +78,10 @@ class ThoiKhoaBieuController extends Controller
 {
     $lopHoc   = $this->getLopHoc();
     $monHoc   = MonHoc::where('is_active', true)->orderBy('ten_mon')->get();
-    $giaoVien = User::role(['giao-vien-chu-nhiem'])
+    $giaoVien = User::role(['giao-vien-chu-nhiem', 'giao-vien-bo-mon'])
                     ->where('is_active', true)->orderBy('name')->get();
 
-    $namHocHienTai = date('Y') . '-' . (date('Y') + 1);
+    $namHocHienTai = \App\Support\NamHoc::hienTai();
     $selectedLopId = $request->lop_hoc_id;
 
     $thuLabels  = [

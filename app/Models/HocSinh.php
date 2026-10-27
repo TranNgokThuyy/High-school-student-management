@@ -87,4 +87,14 @@ class HocSinh extends Model
     {
         return $this->hasMany(HanhKiem::class, 'hoc_sinh_id');
     }
+
+    public function diemDanh()
+    {
+        return $this->hasMany(DiemDanh::class, 'hoc_sinh_id');
+    }
+
+    public function khenThuongKyLuat()
+    {
+        return $this->hasMany(KhenThuongKyLuat::class, 'hoc_sinh_id');
+    }
 }

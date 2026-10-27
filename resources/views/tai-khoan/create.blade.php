@@ -88,7 +88,15 @@
         </option>
         <option value="giao-vien-chu-nhiem"
             {{ old('role') === 'giao-vien-chu-nhiem' ? 'selected' : '' }}>
-            Giáo viên
+            Giáo viên chủ nhiệm
+        </option>
+        <option value="giao-vien-bo-mon"
+            {{ old('role') === 'giao-vien-bo-mon' ? 'selected' : '' }}>
+            Giáo viên bộ môn
+        </option>
+        <option value="ke-toan"
+            {{ old('role') === 'ke-toan' ? 'selected' : '' }}>
+            Kế toán
         </option>
     </select>
     @error('role')

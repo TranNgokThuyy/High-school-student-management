@@ -5,18 +5,19 @@ use App\Models\DiemSo;
 use App\Models\HanhKiem;
 use App\Models\HocSinh;
 use App\Models\LopHoc;
+use App\Models\ThongBao;
 use App\Models\User;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $namHocHienTai = date('Y') . '-' . (date('Y') + 1);
+        $namHocHienTai = \App\Support\NamHoc::hienTai();
         
         $stats = [
             'tong_hoc_sinh' => HocSinh::where('trang_thai', 'Đang học')->count(),
             'tong_lop_hoc' => LopHoc::where('is_active', true)->count(),
-            'tong_giao_vien' => User::role('giao-vien-chu-nhiem')->where('is_active', true)->count(),
+            'tong_giao_vien' => User::role(['giao-vien-chu-nhiem', 'giao-vien-bo-mon'])->where('is_active', true)->count(),
             'tong_tai_khoan' => User::count(),
         ];
 
@@ -34,6 +35,8 @@ class DashboardController extends Controller
             ->groupBy('xep_loai_hanh_kiem')
             ->get();
 
-        return view('dashboard', compact('stats', 'phanBoTheoLop', 'thongKeHanhKiem', 'namHocHienTai'));
+        $thongBao = ThongBao::choNguoiDung(auth()->user())->take(5);
+
+        return view('dashboard', compact('stats', 'phanBoTheoLop', 'thongKeHanhKiem', 'namHocHienTai', 'thongBao'));
     }
 }

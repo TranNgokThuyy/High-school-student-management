@@ -50,7 +50,7 @@
                                 Năm học <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="nam_hoc" class="form-control"
-                                   value="{{ date('Y') . '-' . (date('Y')+1) }}"
+                                   value="{{ \App\Support\NamHoc::hienTai() }}"
                                    placeholder="2024-2025" required>
                         </div>
                     </div>

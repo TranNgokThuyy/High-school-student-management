@@ -1,12 +1,23 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        // SQLite/PostgreSQL: không có information_schema kiểu MySQL → dùng Schema builder
+        if (DB::getDriverName() !== 'mysql') {
+            Schema::table('hanh_kiem', function (Blueprint $table) {
+                $table->dropUnique(['hoc_sinh_id', 'hoc_ky', 'nam_hoc']);
+                $table->unique(['hoc_sinh_id', 'lop_hoc_id', 'hoc_ky', 'nam_hoc'], 'hanh_kiem_4col_unique');
+            });
+            return;
+        }
+
         // Bước 1: Xem các foreign key đang dùng index này
         $fks = DB::select("
             SELECT CONSTRAINT_NAME
@@ -66,6 +77,14 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            Schema::table('hanh_kiem', function (Blueprint $table) {
+                $table->dropUnique('hanh_kiem_4col_unique');
+                $table->unique(['hoc_sinh_id', 'hoc_ky', 'nam_hoc']);
+            });
+            return;
+        }
+
         try {
             DB::statement('ALTER TABLE hanh_kiem DROP INDEX hanh_kiem_4col_unique');
         } catch (\Exception $e) {}

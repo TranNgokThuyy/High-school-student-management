@@ -25,4 +25,19 @@ class PhanCongGiangDay extends Model
     {
         return $this->belongsTo(LopHoc::class, 'lop_hoc_id');
     }
+
+    // Giáo viên chỉ được nhập điểm môn/lớp được phân công; quản trị viên được nhập tất cả
+    public static function duocNhapDiem(User $user, int $lopHocId, int $monHocId, string $hocKy, string $namHoc): bool
+    {
+        if ($user->hasRole('quan-tri-vien')) {
+            return true;
+        }
+
+        return self::where([
+            'giao_vien_id' => $user->id,
+            'lop_hoc_id'   => $lopHocId,
+            'mon_hoc_id'   => $monHocId,
+            'nam_hoc'      => $namHoc,
+        ])->whereIn('hoc_ky', [$hocKy, 'Ca năm'])->exists();
+    }
 }

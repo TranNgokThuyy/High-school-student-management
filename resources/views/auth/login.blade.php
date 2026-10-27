@@ -443,6 +443,11 @@
     <a href="{{ route('register') }}" style="color:#3b82f6;font-weight:600;text-decoration:none">
         Đăng ký ngay
     </a>
+    <div class="mt-2">
+        <a href="{{ route('tra-cuu') }}" style="color:#10b981;font-weight:600;text-decoration:none">
+            Phụ huynh / học sinh tra cứu kết quả học tập
+        </a>
+    </div>
 </div>
                 </div>
 

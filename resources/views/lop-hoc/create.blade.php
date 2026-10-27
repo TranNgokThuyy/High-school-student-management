@@ -63,7 +63,7 @@
                             </label>
                             <input type="text" name="nam_hoc"
                                    class="form-control @error('nam_hoc') is-invalid @enderror"
-                                   value="{{ old('nam_hoc', date('Y') . '-' . (date('Y')+1)) }}"
+                                   value="{{ old('nam_hoc', \App\Support\NamHoc::hienTai()) }}"
                                    placeholder="2024-2025" required>
                             @error('nam_hoc')
                                 <div class="invalid-feedback">{{ $message }}</div>

@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\DiemDanh;
 use App\Models\HanhKiem;
 use App\Models\LopHoc;
+use App\Support\NamHoc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -147,7 +149,7 @@ class HanhKiemController extends Controller
         // Giáo viên có đúng 1 lớp → tự động redirect
         if ($user->hasRole('giao-vien-chu-nhiem') && !$user->hasRole('quan-tri-vien') && $lopHoc->count() === 1) {
             $lop           = $lopHoc->first();
-            $namHocHienTai = date('Y') . '-' . (date('Y') + 1);
+            $namHocHienTai = \App\Support\NamHoc::hienTai();
             return redirect()->route('hanh-kiem.form', [
                 'lop_hoc_id' => $lop->id,
                 'hoc_ky'     => '1',
@@ -155,7 +157,7 @@ class HanhKiemController extends Controller
             ]);
         }
 
-        $namHocHienTai = date('Y') . '-' . (date('Y') + 1);
+        $namHocHienTai = \App\Support\NamHoc::hienTai();
         return view('hanh-kiem.chon-lop', compact('lopHoc', 'namHocHienTai'));
     }
 
@@ -175,7 +177,7 @@ class HanhKiemController extends Controller
         $this->kiemTraQuyenLop($lop);
 
         if ($lop->hocSinh->count() === 0) {
-            return redirect()->route('hanh-kiem.chon-lop')
+            return redirect()->route('hanh-kiem.nhap')
                 ->with('error', "Lớp {$lop->ten_lop} chưa có học sinh nào!");
         }
 
@@ -199,9 +201,15 @@ class HanhKiemController extends Controller
             'nam_hoc'    => $request->nam_hoc,
         ])->get()->keyBy('hoc_sinh_id');
 
+        // Số liệu chuyên cần lấy từ chức năng điểm danh hằng ngày
+        $tongHopDiemDanh = DiemDanh::tongHop(
+            $lop->id,
+            ...NamHoc::khoangThoiGian($request->nam_hoc, $request->hoc_ky)
+        );
+
         return view('hanh-kiem.nhap', compact(
             'lop', 'hanhKiemHienCo', 'hanhKiemKyKia',
-            'hanhKiemCaNam', 'request', 'hocKyKia'
+            'hanhKiemCaNam', 'request', 'hocKyKia', 'tongHopDiemDanh'
         ));
     }
 

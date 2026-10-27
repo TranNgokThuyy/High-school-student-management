@@ -1,59 +1,68 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Hệ thống Quản lý Học sinh THPT
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ứng dụng Laravel 12 (Blade + Bootstrap 5) quản lý học sinh trường THPT, phân quyền bằng `spatie/laravel-permission`.
 
-## About Laravel
+## Cài đặt nhanh
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+```bash
+composer install
+cp .env.example .env        # mặc định dùng SQLite; đổi DB_* nếu dùng MySQL
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate --seed
+php artisan db:seed --class=DemoDataSeeder   # (tuỳ chọn) dữ liệu mẫu để chạy thử
+npm install && npm run build
+php artisan serve
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Tài khoản mặc định:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Vai trò | Email | Mật khẩu |
+|---|---|---|
+| Quản trị viên | admin@school.com | Admin@123456 |
+| Giáo viên chủ nhiệm | hoa.gvcn@school.com | Gvcn@123456 |
+| Giáo viên bộ môn (dữ liệu mẫu) | nam.gvbm@school.com | Gvbm@123456 |
+| Kế toán (dữ liệu mẫu) | ketoan@school.com | Ketoan@123456 |
 
-## Learning Laravel
+Tên trường in trên phiếu thu / phiếu điểm: biến `TEN_TRUONG` trong `.env`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Chạy test: `php artisan test`
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Chức năng
 
-## Laravel Sponsors
+- **Học sinh**: hồ sơ, ảnh thẻ, xem điểm, hạnh kiểm, khen thưởng - kỷ luật, in phiếu điểm cá nhân (PDF).
+- **Nhập học sinh từ Excel** (.xlsx, .xls, .csv): nhận tiêu đề tiếng Việt ("Họ và tên", "Ngày sinh", "Lớp"...),
+  ô ngày của Excel, giữ số 0 đầu SĐT/CCCD, bỏ qua học sinh đã có, báo lỗi theo từng dòng; file mẫu .xlsx.
+- **Lớp học, Môn học, Thời khóa biểu** (chống trùng lịch lớp / giáo viên).
+- **Phân công giảng dạy**: gán giáo viên – môn – lớp theo học kỳ, xem tải giảng dạy (tiết/tuần).
+  Giáo viên chỉ được nhập điểm môn/lớp mình được phân công.
+- **Điểm số**: nhập điểm TX, GK, CK; tự tính ĐTB môn.
+- **Điểm danh hằng ngày**: GVCN điểm danh lớp mình (có mặt / vắng có phép / vắng không phép / đi trễ),
+  tổng hợp chuyên cần theo học kỳ; form hạnh kiểm có nút lấy số liệu từ điểm danh.
+- **Hạnh kiểm & chuyên cần**: tự tính hạnh kiểm cả năm từ HK1 + HK2.
+- **Tổng kết & Lên lớp** (Thông tư 22/2021/TT-BGDĐT): xếp loại học tập (Tốt/Khá/Đạt/Chưa đạt),
+  rèn luyện, danh hiệu Học sinh Xuất sắc / Giỏi, xét lên lớp (nghỉ quá 45 buổi → ở lại),
+  chuyển học sinh sang lớp năm học mới, công nhận tốt nghiệp khối 12.
+- **Khen thưởng - Kỷ luật** theo năm học.
+- **Học phí & khoản thu**: danh mục khoản thu (học phí, BHYT, quỹ...) theo năm học/khối, miễn giảm theo đối tượng
+  chính sách, công nợ theo lớp (xuất Excel), lập phiếu thu và in (số tiền bằng chữ), hủy phiếu có lý do, sổ thu.
+- **Thông báo nội bộ**: đăng theo vai trò nhận, ghim, hạn hiển thị; hiện trên Dashboard.
+- **Tra cứu cho phụ huynh** (`/tra-cuu`, không cần đăng nhập): mã học sinh + ngày sinh → điểm, kết quả học tập/rèn luyện,
+  vắng 30 ngày gần đây, học phí còn nợ. Không hiển thị CCCD/địa chỉ/SĐT; giới hạn 10 lượt/phút.
+- **Báo cáo**: bảng điểm lớp, xuất PDF / Excel.
+- **Tài khoản**: chỉ quản trị viên quản lý; tài khoản tự đăng ký phải chờ kích hoạt.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Phân quyền
 
-### Premium Partners
+| Chức năng | Quản trị viên | GV chủ nhiệm | GV bộ môn | Kế toán |
+|---|---|---|---|---|
+| Tài khoản, lớp, môn, TKB, phân công, thông báo (thêm/sửa/xóa) | ✔ | | | |
+| Nhập điểm | ✔ | theo phân công | theo phân công | |
+| Điểm danh, hạnh kiểm, khen thưởng | ✔ | lớp chủ nhiệm | | |
+| Tổng kết | ✔ | lớp chủ nhiệm | | |
+| Xét lên lớp | ✔ | | | |
+| Xem công nợ học phí | ✔ | lớp chủ nhiệm | | ✔ |
+| Thu tiền, khoản thu, miễn giảm, sổ thu | ✔ | | | ✔ |
+| Hủy phiếu thu | ✔ | | | |
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Danh sách quyền và vai trò nằm ở `app/Support/PhanQuyen.php`; migration `dong_bo_phan_quyen` tự bổ sung quyền mới cho CSDL đang chạy.

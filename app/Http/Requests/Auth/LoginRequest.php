@@ -49,6 +49,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Tài khoản chưa kích hoạt / bị vô hiệu hóa không được đăng nhập
+        if (! Auth::user()->is_active) {
+            Auth::guard('web')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Tài khoản chưa được kích hoạt hoặc đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên!',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
