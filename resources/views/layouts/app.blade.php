@@ -248,6 +248,11 @@
             </a>
             @endcan
             
+            @can('quan-ly-ky-thi')
+            <a href="{{ route('ky-thi.index') }}" class="nav-link {{ request()->routeIs('ky-thi.*') ? 'active' : '' }}">
+                <i class="bi bi-pencil-square"></i> Kỳ thi & phòng thi
+            </a>
+            @endcan
             @can('xem-tong-ket')
             <a href="{{ route('tong-ket.index') }}" class="nav-link {{ request()->routeIs('tong-ket.*') ? 'active' : '' }}">
                 <i class="bi bi-award"></i> Tổng kết & Lên lớp

@@ -27,6 +27,7 @@ use App\Http\Controllers\DangKyMonController;
 use App\Http\Controllers\NhapDiemExcelController;
 use App\Http\Controllers\BienDongController;
 use App\Http\Controllers\ThongKeController;
+use App\Http\Controllers\KyThiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ThoiKhoaBieuController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -178,6 +179,18 @@ Route::middleware(['auth', 'verified', 'check.active'])->group(function () {
             Route::get('/{tenTep}/tai-ve',  [SaoLuuController::class, 'download'])->name('download');
             Route::delete('/{tenTep}',      [SaoLuuController::class, 'destroy'])->name('destroy');
         });
+    });
+
+    // ===== KỲ THI: LỊCH THI, PHÒNG THI, SỐ BÁO DANH =====
+    Route::prefix('ky-thi')->name('ky-thi.')->middleware('permission:quan-ly-ky-thi')->group(function () {
+        Route::get('/',                          [KyThiController::class, 'index'])->name('index');
+        Route::post('/',                         [KyThiController::class, 'store'])->name('store');
+        Route::get('/{kyThi}',                   [KyThiController::class, 'show'])->name('show');
+        Route::delete('/{kyThi}',                [KyThiController::class, 'destroy'])->name('destroy');
+        Route::post('/{kyThi}/lich',             [KyThiController::class, 'themLich'])->name('them-lich');
+        Route::delete('/{kyThi}/lich/{lichThi}', [KyThiController::class, 'xoaLich'])->name('xoa-lich');
+        Route::post('/{kyThi}/xep-phong',        [KyThiController::class, 'xepPhong'])->name('xep-phong');
+        Route::get('/{kyThi}/in',                [KyThiController::class, 'inDanhSach'])->name('in');
     });
 
     // ===== BIẾN ĐỘNG HỌC SINH: CHUYỂN TRƯỜNG / THÔI HỌC =====
